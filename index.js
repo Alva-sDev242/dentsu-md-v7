@@ -3,7 +3,7 @@
 ┃  𝐃𝐄𝐍𝐓𝐒𝐔 𝐌𝐃 𝐕𝟕
 ┣━━━━━━━━━━━━━━━┛
 ┃whatsapp : +242065141056
-┃owner : DENTSU MD V7
+┃owner : ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
 ┃Dev : NatsuTech's Dev 🇨🇬
 ┗━━━━━━━━━━━━━━━┛
 */
@@ -41,7 +41,7 @@ process.on("unhandledRejection", (e) => console.error("unhandledRejection:", e))
 
 console.log(`
 ╔════════════════════════════════╗
-║   DENTSU MD V7 - NatsuTech's Dev ║
+║   ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ - NatsuTech's Dev ║
 ║   WhatsApp × Telegram          ║
 ╚════════════════════════════════╝
 `);
