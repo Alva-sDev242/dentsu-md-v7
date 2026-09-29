@@ -1,5 +1,5 @@
 {
-  "name": "dentsu-md-v7",
+  "name": "dentsu-mini-bot",
   "version": "7.6.0",
   "description": "ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ — WhatsApp × Telegram Bot by NatsuTech's Dev 🇨🇬",
   "main": "index.js",
@@ -8,10 +8,10 @@
   },
   "license": "MIT",
   "author": "NatsuTech's Dev",
-  "homepage": "https://github.com/Alva-sDev242/dentsu-md-v7",
+  "homepage": "https://github.com/Alva-sDev242/dentsu-mini-bot",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Alva-sDev242/dentsu-md-v7"
+    "url": "https://github.com/Alva-sDev242/dentsu-mini-bot"
   },
   "keywords": [
     "whatsapp",
