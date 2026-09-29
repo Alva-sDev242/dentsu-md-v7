@@ -529,7 +529,7 @@ async function apiImageJson(ctx, url, key, emoji) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// 🌸 STICKER / ANIME REACTIONS (waifu.pics)
+//  STICKER / ANIME REACTIONS (waifu.pics)
 // ════════════════════════════════════════════════════════════════
 const ANIME_REACT = [
   "cry","kill","hug","happy","dance","handhold","highfive","slap","kiss",
@@ -540,7 +540,7 @@ for (const r of ANIME_REACT) {
   reg(r, async (ctx) => {
     try {
       const url = await fetchAnimeImage(r, "sfw");
-      await sendImg(ctx, url, `🌸 ${r}`);
+      await sendImg(ctx, url, ` ${r}`);
     } catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
   }, "STICKER", `Anime ${r}`);
 }
