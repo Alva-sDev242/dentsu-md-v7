@@ -40,8 +40,7 @@ reg("pair", async (ctx) => {
 `📲 Usage: *${config.PREFIX}pair <number>*\n` +
 `   Example: ${config.PREFIX}pair 242066123456\n` +
 `   (international format, no +)\n\n` +
-`💞 No Telegram needed — you can connect right here from WhatsApp.\n` +
-`🔗 ${config.REPOSITORY_URL}` });
+`💞 No Telegram needed — you can connect right here from WhatsApp.\n` });
   }
   await ctx.reply({ text: `⏳ Generating pairing code for *+${num}* ...` });
   try {
@@ -57,7 +56,7 @@ reg("pair", async (ctx) => {
 `✅ *WhatsApp pairing code*\n\n` +
 `🔑 ${code}\n\n` +
 `📲 Open WhatsApp → *Linked Devices* → *Link a device* → *Link with phone number* → enter the code.\n\n` +
-`⚠️ Code valid for ~60s.\n🔗 ${config.REPOSITORY_URL}` });
+`⚠️ Code valid for ~60s.` });
       },
     });
   } catch (e) {
