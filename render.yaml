@@ -1,0 +1,18 @@
+services:
+  - type: worker
+    name: dentsu-md-v7
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    disk:
+      name: whatsapp-auth
+      mountPath: /opt/render/project/src/auth_info
+      sizeGB: 1
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: NEXORACLE_API_KEY
+        sync: false
+      - key: OMDB_API_KEY
+        sync: false
