@@ -77,7 +77,6 @@ reg("setpp", async (ctx) => {
   } catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
 }, "OWNER", "Change profile picture");
 
-reg("repo", (ctx) => ctx.reply({ text: config.REPOSITORY_URL }), "OWNER", "Repo");
 
 reg("ban", async (ctx) => {
   if (!ctx.isOwner) return ctx.reply({ text: "❌ Owner only." });
