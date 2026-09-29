@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#25d366">
+    <meta name="description" content="Connecte ton compte WhatsApp à Dentsu MD.">
+    <title>Connexion WhatsApp · NatsuTech's</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --green: #18b957;
+        --green-dark: #07883b;
+        --ink: #142019;
+        --muted: #6d7a72;
+        --line: #e5ebe7;
+        --surface: #ffffff;
+        --soft: #f3faf5;
+        --danger: #b42318;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 0%, #e5faec 0, transparent 34%),
+          linear-gradient(180deg, #fbfefc 0%, #f2f8f4 100%);
+      }
+      .shell {
+        width: min(100% - 32px, 520px);
+        margin: 0 auto;
+        padding: 28px 0 24px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .brand-mark {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border-radius: 14px;
+        color: white;
+        background: var(--green);
+        box-shadow: 0 8px 20px #18b95733;
+        font-size: 23px;
+      }
+      .brand strong { display: block; font-size: 16px; letter-spacing: -.02em; }
+      .brand span { color: var(--muted); font-size: 12px; }
+      .card {
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, .94);
+        box-shadow: 0 18px 50px #1b6d3b12;
+      }
+      h1 { margin: 0; font-size: clamp(27px, 7vw, 36px); line-height: 1.08; letter-spacing: -.045em; }
+      .intro { margin: 12px 0 24px; color: var(--muted); line-height: 1.55; font-size: 14px; }
+      label { display: block; margin: 0 0 8px; color: #405148; font-size: 13px; font-weight: 700; }
+      .row { display: grid; grid-template-columns: 42% 1fr; gap: 10px; }
+      select, input {
+        width: 100%;
+        min-height: 52px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        outline: none;
+        color: var(--ink);
+        background: #fff;
+        font: inherit;
+        font-size: 16px;
+      }
+      select { padding: 0 10px; }
+      input { padding: 0 15px; }
+      select:focus, input:focus { border-color: var(--green); box-shadow: 0 0 0 4px #18b9571a; }
+      button {
+        width: 100%;
+        min-height: 52px;
+        border: 0;
+        border-radius: 14px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--green), var(--green-dark));
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+        box-shadow: 0 10px 20px #18b9572b;
+      }
+      button:disabled { cursor: wait; opacity: .62; }
+      .hint { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+      .status {
+        display: none;
+        margin-top: 18px;
+        padding: 12px 14px;
+        border-radius: 13px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .status.show { display: block; }
+      .status.error { color: var(--danger); background: #fff1f0; }
+      .status.loading { color: #176b3b; background: var(--soft); }
+      .result {
+        display: none;
+        margin-top: 20px;
+        padding: 18px;
+        border: 1px solid #bde9ca;
+        border-radius: 18px;
+        background: var(--soft);
+        text-align: center;
+      }
+      .result.show { display: block; }
+      .result p { margin: 0; color: #4a6354; font-size: 13px; }
+      .code {
+        margin: 10px 0 14px;
+        color: var(--green-dark);
+        font-size: clamp(31px, 10vw, 44px);
+        font-weight: 900;
+        letter-spacing: .12em;
+      }
+      .copy {
+        width: auto;
+        min-height: 44px;
+        padding: 0 20px;
+        color: var(--green-dark);
+        background: #fff;
+        border: 1px solid #bde9ca;
+        box-shadow: none;
+      }
+      .timer { margin-top: 12px !important; color: var(--muted) !important; font-size: 12px !important; }
+      .steps {
+        margin: 24px 0 0;
+        padding: 17px 18px 17px 36px;
+        border-radius: 16px;
+        background: #f8fbf9;
+        color: #53645a;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .steps strong { color: var(--ink); }
+      footer { padding: 20px 0 0; color: var(--muted); text-align: center; font-size: 12px; }
+      @media (max-width: 380px) {
+        .shell { width: min(100% - 20px, 520px); padding-top: 18px; }
+        .card { padding: 19px; border-radius: 20px; }
+        .row { grid-template-columns: 1fr; gap: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="brand">
+        <div class="brand-mark">✦</div>
+        <div>
+          <strong>NatsuTech's 🇨🇬</strong>
+          <span>Connexion WhatsApp sécurisée</span>
+        </div>
+      </header>
+
+      <section class="card">
+        <h1>Connecte ton WhatsApp</h1>
+        <p class="intro">Choisis ton pays, entre ton numéro puis utilise le code reçu dans WhatsApp pour lier ton compte.</p>
+
+        <form id="pair-form">
+          <label for="country">Pays</label>
+          <div class="row">
+            <select id="country" name="countryCode" aria-label="Pays">
+              <option value="242" selected>🇨🇬 +242</option>
+              <option value="243">🇨🇩 +243</option>
+              <option value="237">🇨🇲 +237</option>
+              <option value="241">🇬🇦 +241</option>
+              <option value="225">🇨🇮 +225</option>
+              <option value="221">🇸🇳 +221</option>
+              <option value="234">🇳🇬 +234</option>
+              <option value="33">🇫🇷 +33</option>
+              <option value="32">🇧🇪 +32</option>
+              <option value="1">🇨🇦 +1</option>
+              <option value="1">🇺🇸 +1</option>
+              <option value="44">🇬🇧 +44</option>
+            </select>
+            <input id="number" name="localNumber" inputmode="numeric" autocomplete="tel" placeholder="06 123 45 67" maxlength="16" required>
+          </div>
+          <p class="hint">Exemple : 06xxxx — l’indicatif est ajouté automatiquement.</p>
+          <div style="height: 18px"></div>
+          <button id="submit" type="submit">Connecter mon WhatsApp</button>
+        </form>
+
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+
+        <div id="result" class="result">
+          <p>Ton code de connexion</p>
+          <div id="code" class="code" aria-label="Code de connexion">----</div>
+          <button id="copy" class="copy" type="button">Copier le code</button>
+          <p id="timer" class="timer">Le code expire dans 60 s.</p>
+        </div>
+
+        <ol class="steps">
+          <li>Ouvre <strong>WhatsApp</strong>.</li>
+          <li>Va dans <strong>Appareils connectés</strong>.</li>
+          <li>Choisis <strong>Connecter un appareil</strong>, puis <strong>Associer avec un numéro</strong>.</li>
+          <li>Entre le code affiché ici.</li>
+        </ol>
+      </section>
+      <footer>by NatsuTech's 🇨🇬</footer>
+    </main>
+
+    <script>
+      const form = document.querySelector("#pair-form");
+      const number = document.querySelector("#number");
+      const submit = document.querySelector("#submit");
+      const status = document.querySelector("#status");
+      const result = document.querySelector("#result");
+      const code = document.querySelector("#code");
+      const copy = document.querySelector("#copy");
+      const timer = document.querySelector("#timer");
+      let countdown;
+
+      function showStatus(text, type) {
+        status.textContent = text;
+        status.className = `status show ${type}`;
+      }
+
+      number.addEventListener("input", () => {
+        number.value = number.value.replace(/\D/g, "").slice(0, 15);
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearInterval(countdown);
+        result.classList.remove("show");
+        submit.disabled = true;
+        submit.textContent = "Génération du code…";
+        showStatus("Connexion à WhatsApp, cela peut prendre quelques secondes.", "loading");
+
+        try {
+          const response = await fetch("/api/pair", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              countryCode: document.querySelector("#country").value,
+              localNumber: number.value,
+            }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Impossible de générer le code.");
+
+          status.className = "status";
+          code.textContent = data.code;
+          result.classList.add("show");
+          let remaining = Number(data.expiresIn || 60);
+          timer.textContent = `Le code expire dans ${remaining} s.`;
+          countdown = setInterval(() => {
+            remaining -= 1;
+            timer.textContent = remaining > 0
+              ? `Le code expire dans ${remaining} s.`
+              : "Le code a expiré. Demande un nouveau code.";
+            if (remaining <= 0) {
+              clearInterval(countdown);
+              submit.disabled = false;
+              submit.textContent = "Demander un nouveau code";
+            }
+          }, 1000);
+        } catch (error) {
+          showStatus(error.message, "error");
+        } finally {
+          if (!result.classList.contains("show")) {
+            submit.disabled = false;
+            submit.textContent = "Connecter mon WhatsApp";
+          }
+        }
+      });
+
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(code.textContent);
+          copy.textContent = "Code copié ✓";
+          setTimeout(() => { copy.textContent = "Copier le code"; }, 1800);
+        } catch {
+          copy.textContent = "Sélectionne le code pour le copier";
+        }
+      });
+    </script>
+  </body>
+</html>
