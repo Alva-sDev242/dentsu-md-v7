@@ -152,10 +152,9 @@ function totalCommands() {
 
 function buildTelegramMenu() {
   const head =
-`╔══✦ 🌸 ${config.BOT_NAME} ${config.VERSION} 🌸 ✦══╗
-║ 👨‍💻 Dev  : ${config.DEV}
+`╔══✦ 🌸 ᴅᴇɴᴛsᴜ ᴍɪɴɪ ʙᴏᴛ 🌸 ✦══╗
+║ 👨‍💻 Dev  : N̷a̷t̷s̷u̷ T̷e̷c̷h̷
 ║ 💖 Mode  : Public
-║ 🔥 Cmds  : +300 commands
 ╚══════════════════════╝`;
 
   const body = TG_SECTIONS.map((s) => {
