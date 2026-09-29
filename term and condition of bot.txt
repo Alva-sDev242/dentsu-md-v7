@@ -3,7 +3,7 @@
 ┃  𝐍𝐀𝐓𝐒𝐔'𝐒 𝐏𝐑𝐎𝐉𝐄𝐂𝐓
 ┣━━━━━━━━━━━━━━━┛
 ┃whatsapp : +242065141056
-┃owner : ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
+┃owner : DENTSU MINI BOT
 ┃Dev : NatsuTech's Dev 🇨🇬
 ┗━━━━━━━━━━━━━━━┛
 */
@@ -15,7 +15,7 @@
 ────────────────────────────────────────────────────────────────
 1. À PROPOS
 ────────────────────────────────────────────────────────────────
-ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ est un bot d'assistance WhatsApp × Telegram développé
+DENTSU MINI BOT est un bot d'assistance WhatsApp × Telegram développé
 par NatsuTech's Dev. En connectant ton numéro au bot (via le code de
 pairing), tu acceptes automatiquement les conditions ci-dessous.
 
@@ -76,10 +76,10 @@ Tu peux te déconnecter à tout moment avec /delpair sur Telegram,
 ou en supprimant l'appareil lié depuis WhatsApp → Appareils liés.
 
 ────────────────────────────────────────────────────────────────
-En utilisant ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ, tu confirmes avoir lu et accepté ces
+En utilisant DENTSU MINI BOT, tu confirmes avoir lu et accepté ces
 Conditions. Toute violation entraîne un bannissement immédiat et
 définitif.
-                  © NatsuTech's Dev — ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
+                  © NatsuTech's Dev — DENTSU MINI BOT
 ────────────────────────────────────────────────────────────────
 
 
@@ -88,7 +88,7 @@ définitif.
 ════════════════════════════════════════════════════════════════
 
 1. ABOUT
-ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ is a WhatsApp × Telegram assistant bot developed by
+DENTSU MINI BOT is a WhatsApp × Telegram assistant bot developed by
 NatsuTech's Dev. By connecting your number to the bot (via the pairing
 code), you agree to the terms below.
 
@@ -106,7 +106,7 @@ Center linked above.
 4. DEV CONTACT
 Dev: NatsuTech's Dev 🇨🇬 — t.me/DPLOIEMENT_DUN_BOT2
 
-By using ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ you confirm you have read and accepted
+By using DENTSU MINI BOT you confirm you have read and accepted
 these Terms. Violations lead to an immediate, permanent ban.
 
-                  © NatsuTech's Dev — ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
+                  © NatsuTech's Dev — DENTSU MINI BOT
