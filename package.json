@@ -1,7 +1,7 @@
 {
   "name": "dentsu-md-v7",
   "version": "7.6.0",
-  "description": "DENTSU MD V7 — WhatsApp × Telegram Bot by NatsuTech's Dev 🇨🇬",
+  "description": "ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ — WhatsApp × Telegram Bot by NatsuTech's Dev 🇨🇬",
   "main": "index.js",
   "engines": {
     "node": ">=20.0.0"
