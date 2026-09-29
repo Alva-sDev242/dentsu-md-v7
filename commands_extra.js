@@ -70,7 +70,7 @@ reg("setpp", async (ctx) => {
   const q = ctx.m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
   if (!q?.imageMessage) return ctx.reply({ text: "❌ Reply to an image with .setpp" });
   try {
-    const { downloadMediaMessage } = require("baileys");
+    const { downloadMediaMessage } = require("@whiskeysockets/baileys");
     const buf = await downloadMediaMessage({ message: q }, "buffer", {});
     await ctx.natsu.updateProfilePicture(ctx.natsu.user.id, buf);
     await ctx.reply({ text: "✅ Profile picture updated 💕" });
@@ -663,7 +663,7 @@ reg(["toimg","stickertoimage"], async (ctx) => {
   const q = ctx.m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
   if (!q?.stickerMessage) return ctx.reply({ text: "❌ Reply to a sticker with .toimg" });
   try {
-    const { downloadMediaMessage } = require("baileys");
+    const { downloadMediaMessage } = require("@whiskeysockets/baileys");
     const buf = await downloadMediaMessage({ message: q }, "buffer", {});
     // Send the webp buffer as image (WA renders webp as image)
     await ctx.natsu.sendMessage(ctx.jid, { image: buf, caption: "🖼 Sticker → Image 💕" }, { quoted: ctx.m });
@@ -675,7 +675,7 @@ reg(["tourl","url"], async (ctx) => {
   const q = ctx.m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
   if (!q?.imageMessage) return ctx.reply({ text: "❌ Reply to an image with .tourl" });
   try {
-    const { downloadMediaMessage } = require("baileys");
+    const { downloadMediaMessage } = require("@whiskeysockets/baileys");
     const buf = await downloadMediaMessage({ message: q }, "buffer", {});
     const FormData = require("form-data");
     const fd = new FormData(); fd.append("fileToUpload", buf, "img.jpg"); fd.append("reqtype","fileupload");
