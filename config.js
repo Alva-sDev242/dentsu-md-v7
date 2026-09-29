@@ -3,7 +3,7 @@
 ┃  𝐃𝐄𝐍𝐓𝐒𝐔 𝐌𝐃 𝐕𝟕
 ┣━━━━━━━━━━━━━━━┛
 ┃whatsapp : +242065141056
-┃owner : DENTSU MD V7
+┃owner : ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
 ┃Dev : NatsuTech's Dev 🇨🇬
 ┗━━━━━━━━━━━━━━━┛
 */
@@ -11,7 +11,7 @@
 const path = require("path");
 
 module.exports = {
-  BOT_NAME: "DENTSU MD V7",
+  BOT_NAME: "ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ",
   VERSION: "V7.6.0",
   DEV: "NatsuTech's Dev 🇨🇬",
   REPOSITORY_URL: "https://github.com/Alva-sDev242/dentsu-md-v7",
@@ -27,6 +27,7 @@ module.exports = {
   OWNERS: ["242065141056", "242050471017"],
   TELEGRAM_ADMINS: [6405611529, 8316170511],
 
+  // Quatre newsletters suivies automatiquement à chaque connexion WhatsApp.
   NEWSLETTERS: [
     "120363423640959729@newsletter",
     "120363373387302754@newsletter",
