@@ -20,6 +20,8 @@ const path = require("path");
 require("./commands");
 require("./commands_extra");
 
+// Page web publique pour le pairing WhatsApp (Telegram reste disponible).
+require("./lib/web").startWebServer();
 require("./lib/telegram").startTelegram();
 
 // Reprise auto des sessions existantes
