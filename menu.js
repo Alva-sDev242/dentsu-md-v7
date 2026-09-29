@@ -1,9 +1,9 @@
 /*
 ┏━━━━━━━━━━━━━━━┓
-┃  𝐃𝐄𝐍𝐓𝐒𝐔 𝐌𝐃 𝐕𝟕
+┃  DENTSU MINI BOT
 ┣━━━━━━━━━━━━━━━┛
 ┃whatsapp : +242065141056
-┃owner : ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
+┃owner : DENTSU MINI BOT
 ┃Dev : NatsuTech's Dev 🇨🇬
 ┗━━━━━━━━━━━━━━━┛
 */
@@ -77,8 +77,8 @@ const SECTIONS = [
 // ── Sections du menu TELEGRAM (ordonnées proprement) ───────────
 const TG_SECTIONS = [
   { icon: "💞", name: "WHATSAPP CONNECTION", items: [
-    "/pair 242xxxx",
-    "/delpair 242xxxxx",
+    "/pair 242xxxxxx",
+    "/delpair 242xxxxxx",
     "/howtouse",
     "/checkdevice",
   ]},
