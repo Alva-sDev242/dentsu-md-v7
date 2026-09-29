@@ -51,7 +51,7 @@ may incur a Render charge.
 
 - WhatsApp : +242 06 514 10 56 / +242 05 047 10 17
 - Telegram : [Dploiement d'un bot](https://t.me/DPLOIEMENT_DUN_BOT2)
-- GitHub   : [Alva-sDev242/dentsu-md-v7](https://github.com/Alva-sDev242/dentsu-md-v7)
+- GitHub   : [Alva-sDev242/dentsu-mini-bot](https://github.com/Alva-sDev242/dentsu-mini-bot)
 
 ---
 
