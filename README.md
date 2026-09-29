@@ -3,8 +3,8 @@
 > WhatsApp × Telegram assistant bot — **by NatsuTech's Dev 🇨🇬**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-pink.svg)](./LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E=18-brightgreen.svg)](https://nodejs.org)
-[![Baileys](https://img.shields.io/badge/Baileys-6.7.x-blue.svg)](https://github.com/WhiskeySockets/Baileys)
+[![Node.js](https://img.shields.io/badge/node-%3E=20-brightgreen.svg)](https://nodejs.org)
+[![Baileys](https://img.shields.io/badge/Baileys-7.0.0--rc14-blue.svg)](https://github.com/WhiskeySockets/Baileys)
 [![Dev](https://img.shields.io/badge/Dev-NatsuTech's%20Dev-ff69b4.svg)](https://github.com/Alva-sDev242)
 
 A feminine, fast WhatsApp bot with 400+ commands, paired and managed from Telegram.
@@ -29,7 +29,8 @@ Then on Telegram → `/start` → `/pair <your number>`.
 
 ## 🚀 Deploy on Render
 
-This bot runs as a **Background Worker**, not as a web service. The included
+This bot uses `@whiskeysockets/baileys` 7.0.0-rc14 and runs as a
+**Background Worker**, not as a web service. The included
 `render.yaml` creates the worker and mounts persistent storage for the
 WhatsApp sessions in `auth_info/`.
 
