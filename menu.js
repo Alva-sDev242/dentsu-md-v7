@@ -76,22 +76,22 @@ const SECTIONS = [
 
 // ── Sections du menu TELEGRAM (ordonnées proprement) ───────────
 const TG_SECTIONS = [
-  { icon: "💞", name: "WHATSAPP CONNECTION", items: [
+  { icon: "💞", name: "ᴡʜᴀᴛsᴀᴘᴘ ᴄᴏɴɴᴇᴄᴛɪᴏɴ", items: [
     "/pair 242xxxxxx",
     "/delpair 242xxxxxx",
     "/howtouse",
     "/checkdevice",
   ]},
   { icon: "🌷", name: "INFO", items: [
-    "/ping     — Latency",
-    "/runtime  — Uptime",
-    "/getmyid  — My Telegram ID",
-    "/owner    — Dev contact",
+    "/ping",
+    "/runtime",
+    "/getmyid",
+    "/owner",
   ]},
-  { icon: "👑", name: "ADMIN (restricted)", items: [
-    "/ban 242xxxx [n]   — WhatsApp warnings",
-    "/broadcast <msg>   — Send to all WA groups",
-    "/listpair          — Connected sessions",
+  { icon: "👑", name: "ADMIN", items: [
+    "/ban 242xxxx [n]",
+    "/broadcast <msg>",
+    "/listpair",
   ]},
 
 ];
