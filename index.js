@@ -11,6 +11,8 @@
 // Point d'entrée principal.
 // - Démarre le bot Telegram (qui sert à connecter WhatsApp)
 // - Reprend automatiquement les sessions WhatsApp déjà appairées
+require("dotenv").config();
+
 const fs = require("fs");
 const path = require("path");
 
