@@ -1,4 +1,4 @@
-# 🌸 DENTSU MD V7 🌸
+# 🌸 ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ 🌸
 
 > WhatsApp × Telegram assistant bot — **by NatsuTech's Dev 🇨🇬**
 
