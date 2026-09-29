@@ -216,7 +216,7 @@ reg(["mute","close"], async (ctx) => {
 
 reg(["unmute","open"], async (ctx) => {
   if (!requireGroupAdmin(ctx)) return;
-  try { await ctx.natsu.groupSettingUpdate(ctx.jid, "not_announcement"); await ctx.reply({ text: "🔓 Group opened 🌸" }); }
+  try { await ctx.natsu.groupSettingUpdate(ctx.jid, "not_announcement"); await ctx.reply({ text: "🔓 Group opened " }); }
   catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
 }, "GROUP", "Open the group");
 
@@ -311,7 +311,7 @@ reg(["gname","setname"], async (ctx) => {
 reg(["gdesc","setdesc"], async (ctx) => {
   if (!requireGroupAdmin(ctx)) return;
   if (!ctx.text) return ctx.reply({ text: "❌ .gdesc <description>" });
-  try { await ctx.natsu.groupUpdateDescription(ctx.jid, ctx.text); await ctx.reply({ text: "✅ Description changed 🌸" }); }
+  try { await ctx.natsu.groupUpdateDescription(ctx.jid, ctx.text); await ctx.reply({ text: "✅ Description changed " }); }
   catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
 }, "GROUP", "Change the description");
 
@@ -547,7 +547,7 @@ for (const v of VOIX) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// 🌻 ADVER / FUN (ajouts)
+//  ADVER / FUN (ajouts)
 // ════════════════════════════════════════════════════════════════
 async function jokeApi(ctx, url, label) {
   try { const { data } = await ax.get(url);
@@ -561,7 +561,7 @@ reg("dadjoke", (ctx) => jokeApi(ctx, "https://icanhazdadjoke.com/", "👨 Dad jo
 reg("programmingjoke", (ctx) => jokeApi(ctx, "https://v2.jokeapi.dev/joke/Programming?type=single", "💻 Code joke"), "ADVER", "Programming");
 reg("quote", (ctx) => jokeApi(ctx, "https://api.quotable.io/random", "💬 Quote"), "ADVER", "Quote");
 reg("riddle", (ctx) => jokeApi(ctx, "https://riddles-api.vercel.app/random", "🧩 Riddle"), "ADVER", "Riddle");
-reg("animequote", (ctx) => jokeApi(ctx, "https://animechan.io/api/v1/quotes/random", "🌸 Anime quote"), "ADVER", "Anime quote");
+reg("animequote", (ctx) => jokeApi(ctx, "https://animechan.io/api/v1/quotes/random", " Anime quote"), "ADVER", "Anime quote");
 reg("motivation", (ctx) => jokeApi(ctx, "https://zenquotes.io/api/random", "🌟 Motivation"), "ADVER", "Motivation");
 reg("kanyequote", (ctx) => jokeApi(ctx, "https://api.kanye.rest/", "🎤 Kanye"), "ADVER", "Kanye");
 reg("simpsons", (ctx) => jokeApi(ctx, "https://thesimpsonsquoteapi.glitch.me/quotes", "🍩 Simpsons"), "ADVER", "Simpsons");
@@ -595,7 +595,7 @@ for (const [c, mdl] of Object.entries(AI2)) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// 🌸 ANIME REACTIONS — ajouts
+//  ANIME REACTIONS — ajouts
 // ════════════════════════════════════════════════════════════════
 const ANIME2 = ["lurk","cringe","baka","cuddle2","stare","facepalm","peck","run","sleep","tickle","shrug","lick","feed","cool","love","happy2","sad","angry","laugh","sip","think","yawn"];
 for (const r of ANIME2) {
@@ -604,7 +604,7 @@ for (const r of ANIME2) {
       const pool = ["hug","pat","kiss","slap","wave","wink","smile","poke","yeet","cuddle","bonk","blush","bite","cry","dance","handhold","highfive","happy","nom"];
       const pick = pool[Math.floor(Math.random()*pool.length)];
       const url = await main.fetchAnimeImage(pick, "sfw");
-      await sendImg(ctx, url, `🌸 ${r}`);
+      await sendImg(ctx, url, ` ${r}`);
     } catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
   }, "STICKER", `Anime ${r}`);
 }
@@ -767,7 +767,7 @@ const LOVE_FR = [
   "Tu es mon soleil mon amour ☀️❤️ — même les plus belles fleurs ne valent pas un seul de tes sourires.",
   "Je t'aime tellement que même les étoiles sont jalouses de la lumière que tu mets dans ma vie ✨💕",
   "Bébé… si l'amour était une mer, je m'y noierais avec toi sans hésiter 🌊❤️‍🩹",
-  "Tu es mon premier souffle le matin et ma dernière pensée le soir 🌹💞",
+  "Tu es mon premier souffle le matin et ma dernière pensée le soir 💞",
   "Mon cœur t'appartient, totalement, sans condition — pour toujours et à jamais 🥹💖",
   "J'ai pas besoin de prince charmant bébé, je t'ai toi et c'est tout l'univers pour moi 👑❤️",
   "Chaque battement de mon cœur murmure ton nom mon amour 💗",
@@ -777,7 +777,7 @@ const LOVE_EN = [
   "You are my sunshine my love ☀️❤️ — even the prettiest flowers can't match one of your smiles.",
   "I love you so much that even the stars are jealous of the light you put in my life ✨💕",
   "Baby… if love were an ocean, I'd drown in it with you without thinking twice 🌊❤️‍🩹",
-  "You're my first breath in the morning and my last thought at night 🌹💞",
+  "You're my first breath in the morning and my last thought at night 💞",
   "My heart belongs to you, fully, unconditionally — forever and always 🥹💖",
   "I don't need a prince charming baby, I have you and that's the whole universe 👑❤️",
   "Every beat of my heart whispers your name my love 💗",
@@ -788,6 +788,6 @@ reg(["loveen","loveenglish"], (ctx) => ctx.reply({ text: pick(LOVE_EN) }), "LOVE
 reg(["jtm","ily"], (ctx) => ctx.reply({ text: "Je t'aime mon bébé 🥹❤️‍🩹 — I love you baby 💕" }), "LOVE", "Quick love");
 reg(["miss","tumemanques"], (ctx) => ctx.reply({ text: "Tu me manques tellement bébé 😭💔 — I miss you so much baby 🥹" }), "LOVE", "Miss you");
 reg(["bisou","kiss"], (ctx) => ctx.reply({ text: "Un gros bisou rien que pour toi 😘💋 — A big kiss just for you 💕" }), "LOVE", "Kiss");
-reg(["calin","hug"], (ctx) => ctx.reply({ text: "Je t'envoie un gros câlin bébé 🤗🌸 — Sending you a big warm hug 💖" }), "LOVE", "Hug");
+reg(["calin","hug"], (ctx) => ctx.reply({ text: "Je t'envoie un gros câlin bébé 🤗 — Sending you a big warm hug 💖" }), "LOVE", "Hug");
 reg(["coeur","heart"], (ctx) => ctx.reply({ text: "Mon cœur t'appartient ❤️‍🩹 — My heart belongs to you 💗" }), "LOVE", "Heart");
 
