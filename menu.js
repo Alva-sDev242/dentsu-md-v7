@@ -25,23 +25,23 @@ function uptime(sec) {
 
 // ── Sections du menu WhatsApp ──────────────────────────────────
 const SECTIONS = [
-  { icon: "👑💕", name: "OWNER", items: [
+  { icon: "👑", name: "OWNER", items: [
     "setpp","owner","repo","ban","unban","block","unblock","alive","pair",
     "ping","speed","runtime","self","public","approveall","rejectall",
   ]},
-  { icon: "📥🌸", name: "DOWNLOAD", items: [
+  { icon: "📥", name: "DOWNLOAD", items: [
     "play","play2","song","vv","vv2","tiktok","tt","toimg","ytsearch","yts",
     "spotify","movie","tomp3","tomp4","tourl","url","apk","mediafire",
     "pdftotext","qrcode","shorturl","say","bible","fb","facebook",
     "ytmp4","ytmp3","video","instagram","ig","gitclone","aiimg",
   ]},
-  { icon: "👥💖", name: "GROUP", items: [
+  { icon: "👥", name: "GROUP", items: [
     "hidetag","htag","tagall","demote","promote","mute","unmute","open","close",
     "join","kick","left","add","creategroup","resetlink","pair","tag",
     "listadmins","listonline","closetime","opentime","antilink","grouplink",
     "kickadmins","kickall","welcome","hijack",
   ]},
-  { icon: "🖼🌷", name: "EPHOTO", items: [
+  { icon: "🖼️", name: "EPHOTO", items: [
     "glitchtext","writetext","advancedglow","typographytext","pixelglitch",
     "neonglitch","flagtext","flag3dtext","deletingtext","blackpinkstyle",
     "glowingtext","underwatertext","logomaker","cartoonstyle","papercutstyle",
@@ -49,30 +49,30 @@ const SECTIONS = [
     "luxurygold","multicoloredneon","sandsummer","galaxywallpaper","style1917",
     "makingneon","royaltext","freecreate","galaxystyle","createlogo","lighteffects",
   ]},
-  { icon: "🌸💗", name: "STICKER", items: [
+  { icon: "🧩", name: "STICKER", items: [
     "sticker","cry","kill","hug","happy","dance","handhold","highfive","slap",
     "kiss","blush","bite","cuddle","furbrat","shinobu","bonk","pat","nom",
   ]},
-  { icon: "🎨🌹", name: "LOGO", items: [
+  { icon: "🎨", name: "LOGO", items: [
     "gfx","gfx2","gfx3","gfx4","gfx5","gfx6","gfx7","gfx8","gfx9","gfx10","gfx11","gfx12",
   ]},
-  { icon: "🤖💞", name: "AI", items: [
+  { icon: "🤖", name: "AI", items: [
     "ai","gpt","gpt4","openai","xxai","chatgpt","bot","ask","natsu",
   ]},
-  { icon: "🎮🌺", name: "PLAYER", items: [
+  { icon: "🎮", name: "PLAYER", items: [
     "rps","guess","coin","dice","hangman","tictactoe",
   ]},
-  { icon: "🗣️💕", name: "VOICE", items: [
+  { icon: "🗣️", name: "VOICE", items: [
     "bass","blown","earrape","deep","fast","nightcore","reverse","robot","slow","smooth","squirrel",
   ]},
-  { icon: "🌻💛", name: "ADVER", items: [
+  { icon: "🎲", name: "ADVER", items: [
     "8ball","trivia","joke","truth","dare","meme","advice","urban","moviequote",
     "funfact","dog","cat","fact","coffee",
   ]},
-  { icon: "🔞❤️‍🔥", name: "+18", items: [
+  { icon: "🔞", name: "+18", items: [
     "hentai","waifu","neko","trap","blowjob","paptt",
   ]},
-  { icon: "ℹ️🌼", name: "TOOL / HELP", items: [
+  { icon: "ℹ️", name: "TOOL / HELP", items: [
     "idch","react-ch","jid","dictionary","getpp","wiki","aiimg","qc","readqr",
     "genpass","myip","iplookup","currency","time","recipe","horoscope","book",
     "remind","mathfact","sciencefact","calculate","weather",
@@ -81,13 +81,13 @@ const SECTIONS = [
 
 // ── Sections du menu TELEGRAM (ordonnées proprement) ───────────
 const TG_SECTIONS = [
-  { icon: "💞", name: "ᴡʜᴀᴛsᴀᴘᴘ ᴄᴏɴɴᴇᴄᴛɪᴏɴ", items: [
+  { icon: "🔗", name: "ᴡʜᴀᴛsᴀᴘᴘ ᴄᴏɴɴᴇᴄᴛɪᴏɴ", items: [
     "/pair 242xxxxxx",
     "/delpair 242xxxxxx",
     "/howtouse",
     "/checkdevice",
   ]},
-  { icon: "🌷", name: "INFO", items: [
+  { icon: "", name: "INFO", items: [
     "/ping",
     "/runtime",
     "/getmyid",
@@ -143,7 +143,7 @@ function totalCommands() {
 
 function buildTelegramMenu() {
   const head =
-`╔══✦ 🌸 ᴅᴇɴᴛsᴜ ᴍɪɴɪ ʙᴏᴛ 🌸 ✦══╗
+`╔══✦  ᴅᴇɴᴛsᴜ ᴍɪɴɪ ʙᴏᴛ  ✦══╗
 ║ 👨‍💻 Dev  : N̷a̷t̷s̷u̷ T̷e̷c̷h̷
 ║ 💖 Mode  : Public
 ╚══════════════════════╝`;
@@ -153,7 +153,7 @@ function buildTelegramMenu() {
     return `╭─❒ 「 ${s.icon} ${s.name} 」 ❒─╮\n${lines}\n╰──────────────────╯`;
   }).join("\n\n");
 
-  return `${head}\n\n${body}\n\n💕 .`;
+  return `${head}\n\n${body}\n\n.`;
 }
 
 // WhatsApp menu — vertical layout (1 command per line, "debout pas couché"),
