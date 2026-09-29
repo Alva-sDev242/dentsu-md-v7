@@ -14,7 +14,7 @@ module.exports = {
   BOT_NAME: "DENTSU MINI BOT",
   VERSION: "V7.6.0",
   DEV: "NatsuTech's Dev 🇨🇬",
-  REPOSITORY_URL: "https://github.com/Alva-sDev242/dentsu-md-v7",
+  REPOSITORY_URL: "https://github.com/Alva-sDev242/dentsu-mini-bot",
   PREFIX: ".",
 
   TELEGRAM_TOKEN: process.env.TELEGRAM_BOT_TOKEN || "",
