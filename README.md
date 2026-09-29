@@ -1,4 +1,4 @@
-# 🌸 ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ 🌸
+# 🌸 DENTSU MINI BOT 🌸
 
 > WhatsApp × Telegram assistant bot — **by NatsuTech's Dev 🇨🇬**
 
