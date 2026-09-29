@@ -171,16 +171,15 @@ function buildWaMenu({ user = "User" } = {}) {
   const date = new Date().toLocaleString("en-US", { timeZone: "Africa/Brazzaville" });
   const platform = process.platform === "linux" ? "Linux" : process.platform;
   const header =
-`╔══✦ 🌸 *${config.BOT_NAME} ${config.VERSION}* 🌸 ✦══╗
-║ 🌹 *USER*     : ${user}
-║ ⚡ *MODE*     : Public 💖
-║ 📡 *PLATFORM* : ${platform}
-║ ⚙️ *PREFIX*   : ${config.PREFIX}
-║ 👨‍💻 *DEV*      : ${config.DEV}
-║ ⏱️ *UPTIME*   : ${uptime(process.uptime())}
-║ 🔥 *COMMANDS* : ${totalCommands()}+
-║ 📅 *DATE*     : ${date}
-╚════════════════════════╝`;
+`╔══✦ ᴅᴇɴᴛsᴜ ᴍɪɴɪ ʙᴏᴛ  ✦══╗
+║ 🌹 *ᴜsᴇʀ*     : ${user}
+║ ⚡ *ᴍᴏᴅᴇ*     : Public 
+║ 📡 *ᴘʟᴀᴛғᴏʀᴍ* : ${platform}
+║ ⚙️ *ᴘʀᴇғɪx*   : Multi prfix
+║ 👨‍💻 *ᴅᴇᴠ*      : N̷a̷t̷s̷u̷ T̷e̷c̷h̷
+║ ⏱️ *ᴜᴘᴛɪᴍᴇ*   : ${uptime(process.uptime())}
+║ 📅 *ᴅᴀᴛᴇ*     : ${date}
+╚══════════════════════╝`;
 
   const footer = `\n\n💕 © Developed by ${config.DEV}`;
 
