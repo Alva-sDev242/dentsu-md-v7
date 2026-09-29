@@ -3,7 +3,7 @@
 ┃  𝐍𝐀𝐓𝐒𝐔'𝐒 𝐏𝐑𝐎𝐉𝐄𝐂𝐓
 ┣━━━━━━━━━━━━━━━┛
 ┃whatsapp : +242065141056
-┃owner : DENTSU MD V7
+┃owner : ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
 ┃Dev : NatsuTech's Dev 🇨🇬
 ┗━━━━━━━━━━━━━━━┛
 */
@@ -15,7 +15,7 @@
 ────────────────────────────────────────────────────────────────
 1. À PROPOS
 ────────────────────────────────────────────────────────────────
-DENTSU MD V7 est un bot d'assistance WhatsApp × Telegram développé
+ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ est un bot d'assistance WhatsApp × Telegram développé
 par NatsuTech's Dev. En connectant ton numéro au bot (via le code de
 pairing), tu acceptes automatiquement les conditions ci-dessous.
 
@@ -76,10 +76,10 @@ Tu peux te déconnecter à tout moment avec /delpair sur Telegram,
 ou en supprimant l'appareil lié depuis WhatsApp → Appareils liés.
 
 ────────────────────────────────────────────────────────────────
-En utilisant DENTSU MD V7, tu confirmes avoir lu et accepté ces
+En utilisant ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ, tu confirmes avoir lu et accepté ces
 Conditions. Toute violation entraîne un bannissement immédiat et
 définitif.
-                  © NatsuTech's Dev — DENTSU MD V7
+                  © NatsuTech's Dev — ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
 ────────────────────────────────────────────────────────────────
 
 
@@ -88,7 +88,7 @@ définitif.
 ════════════════════════════════════════════════════════════════
 
 1. ABOUT
-DENTSU MD V7 is a WhatsApp × Telegram assistant bot developed by
+ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ is a WhatsApp × Telegram assistant bot developed by
 NatsuTech's Dev. By connecting your number to the bot (via the pairing
 code), you agree to the terms below.
 
@@ -106,7 +106,7 @@ Center linked above.
 4. DEV CONTACT
 Dev: NatsuTech's Dev 🇨🇬 — t.me/DPLOIEMENT_DUN_BOT2
 
-By using DENTSU MD V7 you confirm you have read and accepted
+By using ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ you confirm you have read and accepted
 these Terms. Violations lead to an immediate, permanent ban.
 
-                  © NatsuTech's Dev — DENTSU MD V7
+                  © NatsuTech's Dev — ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
