@@ -1,9 +1,9 @@
 /*
 ┏━━━━━━━━━━━━━━━┓
-┃  𝐃𝐄𝐍𝐓𝐒𝐔 𝐌𝐃 𝐕𝟕
+┃  DENTSU MINI BOT
 ┣━━━━━━━━━━━━━━━┛
 ┃whatsapp : +242065141056
-┃owner : ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
+┃owner : DENTSU MINI BOT
 ┃Dev : NatsuTech's Dev 🇨🇬
 ┗━━━━━━━━━━━━━━━┛
 */
@@ -11,7 +11,7 @@
 const path = require("path");
 
 module.exports = {
-  BOT_NAME: "ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ",
+  BOT_NAME: "DENTSU MINI BOT",
   VERSION: "V7.6.0",
   DEV: "NatsuTech's Dev 🇨🇬",
   REPOSITORY_URL: "https://github.com/Alva-sDev242/dentsu-md-v7",
