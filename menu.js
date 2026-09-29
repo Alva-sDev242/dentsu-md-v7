@@ -87,7 +87,7 @@ const TG_SECTIONS = [
     "/howtouse",
     "/checkdevice",
   ]},
-  { icon: "", name: "INFO", items: [
+  { icon: "ℹ️", name: "INFO", items: [
     "/ping",
     "/runtime",
     "/getmyid",
