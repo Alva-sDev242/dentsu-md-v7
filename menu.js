@@ -10,6 +10,11 @@
 
 const config = require("./config");
 
+const SMALL_CAPS = { a: "ᴀ", b: "ʙ", c: "ᴄ", d: "ᴅ", e: "ᴇ", f: "ꜰ", g: "ɢ", h: "ʜ", i: "ɪ", j: "ᴊ", k: "ᴋ", l: "ʟ", m: "ᴍ", n: "ɴ", o: "ᴏ", p: "ᴘ", q: "ǫ", r: "ʀ", s: "ꜱ", t: "ᴛ", u: "ᴜ", v: "ᴠ", w: "ᴡ", x: "x", y: "ʏ", z: "ᴢ" };
+function smallCaps(value) { return String(value ?? "").replace(/[A-Za-z]/g, (letter) => SMALL_CAPS[letter.toLowerCase()] || letter); }
+const CURATED_COMMANDS = new Set(["menu","help","ping","alive","runtime","uptime","infobot","owner","repo","pair","setpp","ban","unban","block","unblock","self","public","approveall","rejectall","play","song","tiktok","fb","ytmp4","ytmp3","apk","instagram","gitclone","mediafire","spotify","movie","yts","ytsearch","shorturl","qrcode","say","bible","tourl","vv","toimg","tomp3","sticker","s","getpp","hidetag","tagall","tagadmin","getalladmins","groupinfo","promote","demote","kick","mute","unmute","open","close","join","left","add","creategroup","resetlink","grouplink","listadmins","listonline","antilink","welcome","hijack","tag","glitchtext","writetext","advancedglow","typographytext","pixelglitch","neonglitch","flagtext","flag3dtext","logomaker","cartoonstyle","watercolortext","blackpinklogo","gradienttext","gfx","gfx2","gfx3","ai","gpt","bot","ask","natsu","rps","guess","coin","dice","hangman","tictactoe","joke","truth","dare","advice","funfact","dog","cat","meme","trivia","weather","translate","lyrics","genpass","calculate","wiki","dictionary","time","recipe","book","remind","myip","iplookup","currency","sciencefact","mathfact"]);
+
+
 function uptime(sec) {
   sec = Math.floor(sec);
   const h = Math.floor(sec / 3600);
@@ -112,36 +117,22 @@ function mergedSections() {
   let REG = {};
   try { CATS = require("./commands").CATEGORIES || {}; REG = require("./commands").REGISTRY || {}; } catch {}
   try { require("./commands_extra"); CATS = require("./commands").CATEGORIES || CATS; REG = require("./commands").REGISTRY || REG; } catch {}
-  const BUILTIN = new Set([
-    "menu","help","list","ping","alive","runtime","uptime","infobot","owner",
-    "play","song","ytmp3","video","ytmp4","tiktok","facebook","instagram","twitter",
-    "ai","gpt","gemini","img","wallpaper","sticker","s","getpp",
-    "tagall","hidetag","tagadmin","getalladmins","groupinfo",
-    "promote","demote","kick","mute","unmute","open","close","grouplink",
-    "weather","translate","lyrics","broadcast","bc","join","leave","block","unblock",
-  ]);
+  const BUILTIN = new Set(["menu","help","list","ping","alive","runtime","uptime","infobot","owner","weather","translate","lyrics"]);
   const REAL = (name) => BUILTIN.has(name) || !!REG[name];
-  const out = SECTIONS.map((s) => ({ ...s, items: s.items.filter(REAL) }));
-  for (const [cat, cmds] of Object.entries(CATS)) {
-    const sectionName = CATEGORY_TO_SECTION[cat] || cat;
-    const sec = out.find((s) => s.name === sectionName);
-    if (!sec) { out.push({ icon: "🌸", name: sectionName, items: [...new Set(cmds)] }); continue; }
-    const seen = new Set(sec.items);
-    for (const c of cmds) if (!seen.has(c)) { sec.items.push(c); seen.add(c); }
+  const out = SECTIONS.map((section) => ({ ...section, items: section.items.filter((command) => CURATED_COMMANDS.has(command) && REAL(command)) }));
+  for (const [category, commands] of Object.entries(CATS)) {
+    const sectionName = CATEGORY_TO_SECTION[category] || category;
+    const section = out.find((item) => item.name === sectionName);
+    if (!section) { const items = commands.filter((command) => CURATED_COMMANDS.has(command) && REAL(command)); if (items.length) out.push({ icon: "🧰", name: sectionName, items }); continue; }
+    const seen = new Set(section.items);
+    for (const command of commands) if (CURATED_COMMANDS.has(command) && REAL(command) && !seen.has(command)) { section.items.push(command); seen.add(command); }
   }
-  // Global dedupe: a command appears in only ONE section (first occurrence wins)
-  // and is sorted alphabetically inside its section.
+  const listed = new Set(out.flatMap((section) => section.items));
+  const missing = [...CURATED_COMMANDS].filter((command) => REAL(command) && !listed.has(command));
+  if (missing.length) out.push({ icon: "🧰", name: "TOOLS", items: missing });
   const seenGlobal = new Set();
-  for (const s of out) {
-    const uniq = [];
-    for (const c of s.items) {
-      if (seenGlobal.has(c)) continue;
-      seenGlobal.add(c);
-      uniq.push(c);
-    }
-    s.items = uniq.sort((a, b) => a.localeCompare(b));
-  }
-  return out.filter((s) => s.items.length > 0);
+  for (const section of out) { const unique = []; for (const command of section.items) { if (seenGlobal.has(command)) continue; seenGlobal.add(command); unique.push(command); } section.items = unique.sort((a, b) => a.localeCompare(b)); }
+  return out.filter((section) => section.items.length > 0);
 }
 
 function totalCommands() {
@@ -170,26 +161,22 @@ function buildTelegramMenu() {
 function buildWaMenu({ user = "User" } = {}) {
   const date = new Date().toLocaleString("en-US", { timeZone: "Africa/Brazzaville" });
   const platform = process.platform === "linux" ? "Linux" : process.platform;
-  const header =
-`╔══✦ ᴅᴇɴᴛsᴜ ᴍɪɴɪ ʙᴏᴛ  ✦══╗
-║ 🌹 *ᴜsᴇʀ*     : ${user}
-║ ⚡ *ᴍᴏᴅᴇ*     : Public 
-║ 📡 *ᴘʟᴀᴛғᴏʀᴍ* : ${platform}
-║ ⚙️ *ᴘʀᴇғɪx*   : Multi prfix
-║ 👨‍💻 *ᴅᴇᴠ*      : N̷a̷t̷s̷u̷ T̷e̷c̷h̷
-║ ⏱️ *ᴜᴘᴛɪᴍᴇ*   : ${uptime(process.uptime())}
-║ 📅 *ᴅᴀᴛᴇ*     : ${date}
-╚══════════════════════╝`;
-
-  const footer = `\n\n💕 © Developed by ${config.DEV}`;
-
-  // Render every section as a vertical list (one command per line).
-  const blocks = mergedSections().map((s) => {
-    const lines = s.items.map((c) => `┃ ✦ ${config.PREFIX}${c}`).join("\n");
-    return `╭━━〔 ${s.icon} *${s.name}* 〕━━╮\n${lines}\n╰━━━━━━━━━━━━━━╯`;
+  const header = [
+    "╭━━━〔 🤖 ᴅᴇɴᴛsᴜ ᴍɪɴɪ ʙᴏᴛ 〕━━━╮",
+    `┃ 👤 *${smallCaps(user)}*`,
+    `┃ ⚡ *ᴍᴏᴅᴇ* : ${smallCaps("Public")}`,
+    `┃ 📡 *ᴘʟᴀᴛғᴏʀᴍ* : ${smallCaps(platform)}`,
+    `┃ ⚙️ *ᴘʀᴇꜰɪx* : ${smallCaps(config.PREFIX || ".")}`,
+    `┃ 👨‍💻 *ᴅᴇᴠ* : ${smallCaps(config.DEV)}`,
+    `┃ ⏱️ *ᴜᴘᴛɪᴍᴇ* : ${smallCaps(uptime(process.uptime()))}`,
+    `┃ 📅 *ᴅᴀᴛᴇ* : ${smallCaps(date)}`,
+    "╰━━━━━━━━━━━━━━━━━━━━━━╯",
+  ].join("\n");
+  const blocks = mergedSections().map((section) => {
+    const lines = section.items.map((command) => `┃ ✦ ${smallCaps(config.PREFIX + command)}`).join("\n");
+    return `╭─〔 ${section.icon} *${smallCaps(section.name)}* 〕─╮\n${lines}\n╰──────────────────╯`;
   });
-
-  // SINGLE message: image + full caption, no pagination, no split.
+  const footer = `\n\n╰─ ${smallCaps("DENTSU MINI BOT")} • ${smallCaps("by")} ${smallCaps(config.DEV)} ─╯`;
   return header + "\n\n" + blocks.join("\n\n") + footer;
 }
 
