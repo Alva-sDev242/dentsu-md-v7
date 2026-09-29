@@ -1,9 +1,9 @@
 /*
 ┏━━━━━━━━━━━━━━━┓
-┃  𝐃𝐄𝐍𝐓𝐒𝐔 𝐌𝐃 𝐕𝟕
+┃  DENTSU MINI BOT
 ┣━━━━━━━━━━━━━━━┛
 ┃whatsapp : +242065141056
-┃owner : ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ
+┃owner : DENTSU MINI BOT
 ┃Dev : NatsuTech's Dev 🇨🇬
 ┗━━━━━━━━━━━━━━━┛
 */
@@ -41,7 +41,7 @@ process.on("unhandledRejection", (e) => console.error("unhandledRejection:", e))
 
 console.log(`
 ╔════════════════════════════════╗
-║   ᴍɪɴɪ ᴅᴇɴᴛsᴜ ʙᴏᴛ - NatsuTech's Dev ║
+║   DENTSU MINI BOT - NatsuTech's Dev ║
 ║   WhatsApp × Telegram          ║
 ╚════════════════════════════════╝
 `);
