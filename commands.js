@@ -172,54 +172,74 @@ for (const c of LOGOS) {
 // 📥 DOWNLOADER MENU — APIs choisies par le user + mes propres APIs
 // ════════════════════════════════════════════════════════════════
 
-// helper : récupère un videoId YouTube (essaie plusieurs APIs)
-async function ytSearchFirst(query) {
-  const tries = [
-    `https://api.giftedtech.web.id/api/search/yts?apikey=gifted&query=${encodeURIComponent(query)}`,
-    `https://api.giftedtech.co.ke/api/search/yts?apikey=gifted&query=${encodeURIComponent(query)}`,
-  ];
-  for (const u of tries) {
-    try {
-      const { data } = await axiosInstance.get(u);
-      const v = data?.results?.[0] || data?.result?.[0] || data?.BK9?.[0];
-      if (v) {
-        return {
-          videoId: v.videoId || v.id || (v.url || "").split("v=")[1],
-          title: v.title,
-          thumb: v.thumbnail || v.image,
-          url: v.url || `https://www.youtube.com/watch?v=${v.videoId || v.id}`,
-        };
-      }
-    } catch {}
-  }
-  throw new Error("No video found");
+
+// NexRay handles YouTube search and audio download without an API key.
+const NEXRAY_API_BASE = "https://api.nexray.eu.cc";
+
+function extractYouTubeVideoId(value) {
+  const input = String(value || "").trim();
+  if (/^[A-Za-z0-9_-]{11}$/.test(input)) return input;
+  try {
+    const url = new URL(input);
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    let id = "";
+    if (host === "youtu.be") id = url.pathname.split("/").filter(Boolean)[0] || "";
+    else if (host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtube-nocookie.com") {
+      id = url.searchParams.get("v") || url.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1] || "";
+    }
+    return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : "";
+  } catch { return ""; }
 }
 
-// • play / song — API : https://www.youtube.com/watch?v=${videoId}
-reg(["play", "song", "play2"], async (ctx) => {
-  if (!ctx.text) return ctx.reply({ text: `❌ Exemple — play despacito` });
+async function resolveYouTubeVideo(input) {
+  const query = String(input || "").trim();
+  const directId = extractYouTubeVideoId(query);
+  if (directId) return { videoId: directId, title: "YouTube", url: "https://www.youtube.com/watch?v=" + directId };
+
+  const { data } = await axiosInstance.get(NEXRAY_API_BASE + "/search/youtube", {
+    params: { q: query }, timeout: 25000,
+  });
+  if (data?.status === false) throw new Error(data.error || "La recherche YouTube a échoué.");
+  const raw = data?.result ?? data?.results ?? data?.data ?? [];
+  const results = Array.isArray(raw) ? raw : [raw];
+  const video = results.find((item) => item && (extractYouTubeVideoId(item.id || item.videoId || item.video_id) || extractYouTubeVideoId(item.url || item.link)));
+  if (!video) throw new Error("Aucune vidéo YouTube trouvée pour ce titre.");
+  const videoId = extractYouTubeVideoId(video.id || video.videoId || video.video_id || video.url || video.link);
+  return {
+    videoId,
+    title: video.title || video.name || "YouTube",
+    url: "https://www.youtube.com/watch?v=" + videoId,
+  };
+}
+
+function nexrayErrorMessage(error) {
+  const status = Number(error?.response?.status || 0);
+  const providerMessage = error?.response?.data?.error || error?.response?.data?.message || error?.message;
+  if (status === 429) return "NexRay a limité les requêtes (429). Réessaie dans quelques minutes.";
+  if (status >= 500) return "NexRay rencontre un problème temporaire" + (providerMessage ? ": " + providerMessage : ".");
+  return providerMessage || "Échec de la requête NexRay.";
+}
+
+async function handleYouTubeAudio(ctx) {
+  const input = String(ctx.text || "").trim();
+  if (!input) return ctx.reply({ text: "❌ Envoie un titre ou un lien YouTube après play/song/ytmp3." });
   try {
-    const info = await ytSearchFirst(ctx.text);
-    const ytUrl = `https://www.youtube.com/watch?v=${info.videoId}`;
-    await ctx.reply({ text: `🎵 *${info.title}*\n🔗 ${ytUrl}\n\n⏳ Downloading audio...` });
-    const apis = [
-      `https://api.giftedtech.web.id/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(ytUrl)}`,
-      `https://api.giftedtech.co.ke/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(ytUrl)}`,
-    ];
-    let audUrl;
-    for (const a of apis) {
-      try {
-        const { data } = await axiosInstance.get(a);
-        audUrl = data?.result?.download_url || data?.result?.url || data?.BK9?.downloadUrl;
-        if (audUrl) break;
-      } catch {}
-    }
-    if (!audUrl) throw new Error("Lien audio introuvable");
-    await sendAud(ctx, audUrl);
-  } catch (e) {
-    await ctx.reply({ text: `❌ play — ${e.message}` });
+    const video = await resolveYouTubeVideo(input);
+    await ctx.reply({ text: "🎵 *" + video.title + "*\n🔗 " + video.url + "\n\n⏳ Préparation de l’audio…" });
+    const { data } = await axiosInstance.get(NEXRAY_API_BASE + "/downloader/savetube", {
+      params: { url: video.url }, timeout: 90000,
+    });
+    if (data?.status === false) throw new Error(data.error || "NexRay n’a pas pu télécharger cet audio.");
+    const audioUrl = data?.result?.url || data?.result?.download_url || data?.result?.audio_url;
+    if (!audioUrl || !/^https?:\/\//i.test(audioUrl)) throw new Error("NexRay n’a pas fourni de lien audio valide.");
+    await sendAud(ctx, audioUrl);
+  } catch (error) {
+    console.error("NexRay play/song error:", error.message);
+    await ctx.reply({ text: "❌ " + nexrayErrorMessage(error) });
   }
-}, "DOWNLOAD", "Audio YouTube");
+}
+
+reg(["play", "song", "play2"], handleYouTubeAudio, "DOWNLOAD", "Audio YouTube");
 
 // • tt / tiktok — API: https://api.tikwm.com/?url=...&hd=1
 reg(["tt", "tiktok"], async (ctx) => {
@@ -285,17 +305,7 @@ reg(["ytmp4", "video"], async (ctx) => {
   } catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
 }, "DOWNLOAD", "YouTube video");
 
-reg("ytmp3", async (ctx) => {
-  if (!ctx.text) return ctx.reply({ text: `❌ Exemple — ytmp3 <url>` });
-  try {
-    const { data } = await axiosInstance.get(
-      `https://api.giftedtech.web.id/api/download/ytmp3?apikey=gifted&url=${encodeURIComponent(ctx.text)}`,
-    );
-    const u = data?.result?.download_url || data?.result?.url;
-    if (!u) throw new Error("Audio introuvable");
-    await sendAud(ctx, u);
-  } catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
-}, "DOWNLOAD", "YouTube mp3");
+reg("ytmp3", handleYouTubeAudio, "DOWNLOAD", "YouTube mp3");
 
 // APK
 reg(["apk", "apkdl"], async (ctx) => {
@@ -639,7 +649,7 @@ reg("remind", (ctx) => {
 
 // ════════════════════════════════════════════════════════════════
 function listAll() { return Object.keys(REGISTRY).sort(); }
-module.exports = { REGISTRY, CATEGORIES, listAll, fetchAnimeImage };
+module.exports = { REGISTRY, CATEGORIES, listAll, fetchAnimeImage, handleYouTubeAudio };
 
 // ════════════════════════════════════════════════════════════════
 // 🔞 +18 — NSFW (waifu.pics nsfw)
