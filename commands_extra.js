@@ -18,7 +18,6 @@ const main = require("./commands");
 const REGISTRY = main.REGISTRY;
 const CATEGORIES = main.CATEGORIES;
 const ax = axios.create({ timeout: 60000 });
-const ADMIN_BULK_PREVIEWS = new Map();
 
 function reg(names, handler, category = "MISC", desc = "") {
   for (const n of [].concat(names)) {
@@ -245,34 +244,8 @@ reg("restart", (ctx) => {
 // ════════════════════════════════════════════════════════════════
 // 👥 GROUP
 // ════════════════════════════════════════════════════════════════
-function normalizeGroupJid(value) {
-  if (!value) return "";
-  const text = String(value).trim().toLowerCase();
-  const parts = text.split("@");
-  const local = (parts[0] || "").split(":")[0];
-  return local ? `${local}@${parts[1] || "s.whatsapp.net"}` : "";
-}
-function participantIdentities(values) {
-  const items = Array.isArray(values) ? values : [values];
-  const result = new Set();
-  for (const item of items) {
-    if (item && typeof item === "object") {
-      for (const key of ["id", "jid", "lid", "phoneNumber", "phone_number", "participantAlt"]) {
-        if (item[key]) result.add(normalizeGroupJid(item[key]));
-      }
-    } else if (item) result.add(normalizeGroupJid(item));
-  }
-  result.delete("");
-  return result;
-}
-function sameGroupParticipant(left, right) {
-  const a = participantIdentities(left);
-  const b = participantIdentities(right);
-  for (const value of a) if (b.has(value)) return true;
-  return false;
-}
 function isAdminCheck(meta, jid) {
-  const p = meta.participants.find((x) => sameGroupParticipant(x, jid));
+  const p = meta.participants.find((x) => x.id === jid);
   return p && (p.admin === "admin" || p.admin === "superadmin");
 }
 
@@ -302,59 +275,6 @@ async function groupAction(ctx, action) {
 reg(["kick","k"], (ctx) => groupAction(ctx, "remove"), "GROUP", "Kick user");
 reg(["promote","p"], (ctx) => groupAction(ctx, "promote"), "GROUP", "Promote");
 reg(["demote","d"], (ctx) => groupAction(ctx, "demote"), "GROUP", "Demote");
-async function bulkAdminAction(ctx, action) {
-  if (!requireGroupAdmin(ctx)) return;
-  if (!ctx.isBotAdmin) return ctx.reply({ text: "❌ Make the bot a group admin first." });
-  const verb = action === "promote" ? "promoteall" : "demoteall";
-  try {
-    const meta = await ctx.natsu.groupMetadata(ctx.jid);
-    const sender = [ctx.m.key?.participant, ctx.m.key?.participantAlt];
-    const bot = [ctx.natsu.user?.id, ctx.natsu.user?.lid];
-    const targets = meta.participants.filter((participant) => {
-      const isAdmin = participant.admin === "admin" || participant.admin === "superadmin";
-      const isOwner = participant.admin === "superadmin" || participant.isSuperAdmin === true ||
-        (meta.owner && sameGroupParticipant(participant, meta.owner));
-      if (sameGroupParticipant(participant, sender) || sameGroupParticipant(participant, bot) || isOwner) return false;
-      return action === "promote" ? !isAdmin : participant.admin === "admin";
-    });
-    if (!targets.length) return ctx.reply({ text: action === "promote" ? "✅ There are no eligible members to promote." : "✅ There are no other admins to demote." });
-
-    const requester = normalizeGroupJid(ctx.m.key?.participant || ctx.m.key?.participantAlt || ctx.m.key?.remoteJid || ctx.jid);
-    const previewKey = `${ctx.jid}:${requester}`;
-    const targetIds = targets.map((participant) => participant.id).filter(Boolean);
-    const previous = ADMIN_BULK_PREVIEWS.get(previewKey);
-    const sameTargets = previous && previous.action === action && previous.expiresAt > Date.now() &&
-      previous.ids.slice().sort().join("|") === targetIds.slice().sort().join("|");
-    if ((ctx.text || "").trim().toLowerCase() !== "confirm") {
-      ADMIN_BULK_PREVIEWS.set(previewKey, { action, ids: targetIds, expiresAt: Date.now() + 120000 });
-      const description = action === "promote" ? "will become admins" : "will lose admin rights";
-      return ctx.reply({ text: `⚠️ ${targetIds.length} member(s) ${description}. The group owner, you, and the bot will be skipped. Preview expires in 2 minutes.\nRun *${config.PREFIX}${verb} confirm* to continue.` });
-    }
-    if (!sameTargets) {
-      ADMIN_BULK_PREVIEWS.set(previewKey, { action, ids: targetIds, expiresAt: Date.now() + 120000 });
-      return ctx.reply({ text: `⚠️ The member list changed or the preview expired. Review this preview and run *${config.PREFIX}${verb} confirm* again.` });
-    }
-
-    let changed = 0;
-    let failed = 0;
-    for (const id of previous.ids) {
-      try {
-        const result = await ctx.natsu.groupParticipantsUpdate(ctx.jid, [id], action);
-        const status = Array.isArray(result) ? result[0]?.status : result?.status;
-        if (status && Number(status) !== 200) failed += 1;
-        else changed += 1;
-      } catch { failed += 1; }
-      await new Promise((resolve) => setTimeout(resolve, 250));
-    }
-    ADMIN_BULK_PREVIEWS.delete(previewKey);
-    const done = action === "promote" ? "Promoted" : "Demoted";
-    await ctx.reply({ text: `✅ ${done} ${changed} member(s).${failed ? ` ⚠️ ${failed} failed.` : ""}` });
-  } catch (error) {
-    await ctx.reply({ text: `❌ ${verb}: ${error.message}` });
-  }
-}
-reg("promoteall", (ctx) => bulkAdminAction(ctx, "promote"), "GROUP", "Promote all members");
-reg("demoteall", (ctx) => bulkAdminAction(ctx, "demote"), "GROUP", "Demote all other admins");
 reg(["add","invite"], (ctx) => {
   if (!requireGroupAdmin(ctx)) return;
   const num = (ctx.text || "").replace(/\D/g, "");
