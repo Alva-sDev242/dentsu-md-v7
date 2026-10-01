@@ -13,7 +13,7 @@ const { spawnSync } = require("child_process");
 
 const SMALL_CAPS = { a: "ᴀ", b: "ʙ", c: "ᴄ", d: "ᴅ", e: "ᴇ", f: "ꜰ", g: "ɢ", h: "ʜ", i: "ɪ", j: "ᴊ", k: "ᴋ", l: "ʟ", m: "ᴍ", n: "ɴ", o: "ᴏ", p: "ᴘ", q: "ǫ", r: "ʀ", s: "ꜱ", t: "ᴛ", u: "ᴜ", v: "ᴠ", w: "ᴡ", x: "x", y: "ʏ", z: "ᴢ" };
 function smallCaps(value) { return String(value ?? "").replace(/[A-Za-z]/g, (letter) => SMALL_CAPS[letter.toLowerCase()] || letter); }
-const CURATED_COMMANDS = new Set(["menu","help","ping","alive","runtime","uptime","infobot","owner","pair","setpp","ban","unban","block","unblock","self","public","approveall","approuveall","rejectall","play","song","tiktok","fb","ytmp4","ytmp3","apk","instagram","gitclone","mediafire","spotify","movie","yts","ytsearch","shorturl","qrcode","say","bible","tourl","vv","toimg","tomp3","sticker","s","getpp","hidetag","tagall","tagadmin","getalladmins","groupinfo","promote","promoteall","demote","demoteall","kick","mute","unmute","open","close","join","left","add","creategroup","resetlink","grouplink","listadmins","members","antilink","welcome","tag","glitchtext","writetext","advancedglow","typographytext","pixelglitch","neonglitch","flagtext","flag3dtext","logomaker","cartoonstyle","watercolortext","blackpinklogo","gradienttext","gfx","gfx2","gfx3","ai","gpt","bot","ask","natsu","rps","guess","coin","dice","hangman","tictactoe","joke","truth","dare","advice","funfact","dog","cat","meme","trivia","weather","translate","lyrics","genpass","calculate","wiki","dictionary","time","recipe","book","remind","myip","iplookup","currency","sciencefact","promoteall"]);
+const CURATED_COMMANDS = new Set(["menu","help","ping","alive","runtime","uptime","infobot","owner","pair","setpp","ban","unban","block","unblock","self","public","approuveall","play","song","tiktok","fb","ytmp4","ytmp3","apk","instagram","gitclone","mediafire","spotify","movie","yts","ytsearch","shorturl","qrcode","say","bible","tourl","vv","toimg","tomp3","sticker","s","getpp","hidetag","tagall","tagadmin","getalladmins","groupinfo","promote","demote","kick","mute","unmute","open","close","join","left","add","creategroup","resetlink","grouplink","listadmins","members","antilink","welcome","tag","glitchtext","writetext","advancedglow","typographytext","pixelglitch","neonglitch","flagtext","flag3dtext","logomaker","cartoonstyle","watercolortext","blackpinklogo","gradienttext","gfx","gfx2","gfx3","ai","gpt","bot","ask","natsu","rps","guess","coin","dice","hangman","tictactoe","joke","truth","dare","advice","funfact","dog","cat","meme","trivia","weather","translate","lyrics","genpass","calculate","wiki","dictionary","time","recipe","book","remind","myip","iplookup","currency","sciencefact","rejecteall","approve","reject","antispam"]);
 
 
 function uptime(sec) {
@@ -40,7 +40,7 @@ const SECTIONS = [
     "hidetag","htag","tagall","demote","promote","mute","unmute","open","close",
     "join","kick","left","add","creategroup","resetlink","pair","tag",
     "listadmins","members","closetime","opentime","antilink","grouplink",
-    "kickadmins","kickall","welcome","approveall","approuveall","rejectall","demoteall",
+    "kickadmins","kickall","welcome","approveall","approuveall","rejectall",
   ]},
   { icon: "🖼️", name: "EPHOTO", items: [
     "glitchtext","writetext","advancedglow","typographytext","pixelglitch",
