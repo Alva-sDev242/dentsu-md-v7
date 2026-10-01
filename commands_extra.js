@@ -843,25 +843,39 @@ reg(["wallpaper","wp"], async (ctx) => {
 }, "DOWNLOAD", "Wallpaper");
 
 reg(["vv","viewonce"], async (ctx) => {
+reg(["vv","viewonce"], async (ctx) => {
   const quoted = quotedWAMessage(ctx);
-  if (!quoted) return ctx.reply({ text: `❌ Reply to a regular photo or video with *${config.PREFIX}vv*.` });
-  const { content, viewOnce } = unwrapQuotedContent(quoted.message);
-  if (viewOnce) {
-    return ctx.reply({ text: "🔒 This message is marked as view once. I won't bypass that privacy setting—please ask the sender to share it as a regular photo or video." });
-  }
-  const type = content?.imageMessage ? "image" : content?.videoMessage ? "video" : null;
-  if (!type) return ctx.reply({ text: `❌ ${config.PREFIX}vv supports regular quoted photos and videos only.` });
+  if (!quoted) return ctx.reply({ text: `❌ Réponds à une photo, vidéo ou audio avec *${config.PREFIX}vv*.` });
+  const { content } = unwrapQuotedContent(quoted.message);
+  const type = content?.imageMessage ? "image" : content?.videoMessage ? "video" : content?.audioMessage ? "audio" : null;
+  if (!type) return ctx.reply({ text: `❌ ${config.PREFIX}vv fonctionne uniquement sur les photos, vidéos et audios.` });
   try {
-    const buffer = await downloadQuotedMedia(ctx, quoted);
-    await ctx.natsu.sendMessage(ctx.jid, {
+    const targetMsg = {
+      key: quoted.key,
+      message: content,
+    };
+    const { downloadMediaMessage } = require("@whiskeysockets/baileys");
+    const buffer = await downloadMediaMessage(targetMsg, "buffer", {}, {
+      logger: ctx.natsu.logger,
+      reuploadRequest: (message) => ctx.natsu.updateMediaMessage(message),
+    });
+    const caption = content?.imageMessage?.caption || content?.videoMessage?.caption || "🔓 View-once récupéré";
+    const messagePayload = {
       [type]: buffer,
-      caption: "📎 Copy of the quoted media",
       contextInfo: config.contextInfo,
-    }, { quoted: ctx.m });
+    };
+    if (type !== "audio") {
+      messagePayload.caption = caption;
+    } else {
+      messagePayload.mimetype = content?.audioMessage?.mimetype || "audio/ogg; codecs=opus";
+      messagePayload.ptt = Boolean(content?.audioMessage?.ptt);
+    }
+    await ctx.natsu.sendMessage(ctx.jid, messagePayload, { quoted: ctx.m });
   } catch (e) {
-    await ctx.reply({ text: `❌ vv: ${e.message}` });
+    await ctx.reply({ text: `❌ Erreur vv: ${e.message}` });
   }
-}, "DOWNLOAD", "Copy a regular quoted photo/video");
+}, "DOWNLOAD", "Récupérer un média view-once ou normal");
+
 
 reg(["toimg","stickertoimage"], async (ctx) => {
   const quoted = quotedWAMessage(ctx);
