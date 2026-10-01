@@ -41,6 +41,7 @@ async function fetchAnimeImage(name, type = "sfw") {
 // ─── registry ──────────────────────────────────────────────────
 const REGISTRY = {};
 const CATEGORIES = {};
+const REQUEST_PREVIEWS = new Map();
 function reg(names, handler, category = "MISC", desc = "") {
   const arr = [].concat(names);
   for (const n of arr) {
@@ -456,37 +457,45 @@ reg("bible", async (ctx) => {
   } catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
 }, "DOWNLOAD", "Bible");
 
-// stubs (toimg/tomp3/tomp4/tourl/url/vv/vv2/pdftotext sont gérés ailleurs ou via reply)
-// On les enregistre pour qu'ils apparaissent au menu — gestion réelle dans whatsapp.js si besoin.
+// Media utilities that need quoted-message context are registered in commands_extra.js.
 
-// ════════════════════════════════════════════════════════════════
-// 👑 OWNER — approveall (approuve toutes les demandes d'entrée du groupe)
-// ════════════════════════════════════════════════════════════════
-reg("approveall", async (ctx) => {
+async function handleAllJoinRequests(ctx, action) {
   if (!ctx.isGroup) return ctx.reply({ text: "❌ Group only." });
-  if (!ctx.isOwner) return ctx.reply({ text: "❌ Owner only." });
+  if (!ctx.isAdmin && !ctx.isOwner) return ctx.reply({ text: "❌ Group admins only." });
+  if (!ctx.isBotAdmin) return ctx.reply({ text: "❌ Make the bot a group admin first." });
   try {
     const requests = await ctx.natsu.groupRequestParticipantsList(ctx.jid);
     if (!requests?.length) return ctx.reply({ text: "✅ No pending requests." });
-    const jids = requests.map((r) => r.jid);
-    await ctx.natsu.groupRequestParticipantsUpdate(ctx.jid, jids, "approve");
-    await ctx.reply({ text: `✅ ${jids.length} request(s) approved.` });
+    const jids = requests.map((request) => request.jid).filter(Boolean);
+    if (!jids.length) return ctx.reply({ text: "✅ No valid pending requests." });
+    const requester = ctx.m.key?.participant || ctx.m.key?.remoteJid || ctx.jid;
+    const key = `${action}:${ctx.jid}:${requester}`;
+    const previous = REQUEST_PREVIEWS.get(key);
+    const sameQueue = previous && previous.expiresAt > Date.now() &&
+      previous.jids.slice().sort().join("|") === jids.slice().sort().join("|");
+    if ((ctx.text || "").trim().toLowerCase() !== "confirm") {
+      REQUEST_PREVIEWS.set(key, { jids, expiresAt: Date.now() + 120000 });
+      return ctx.reply({
+        text: `⚠️ ${jids.length} pending request(s) will be ${action === "approve" ? "approved" : "rejected"}. This preview expires in 2 minutes.\nRun *${config.PREFIX}${action === "approve" ? "approveall" : "rejectall"} confirm* to continue.`,
+      });
+    }
+    if (!sameQueue) {
+      REQUEST_PREVIEWS.set(key, { jids, expiresAt: Date.now() + 120000 });
+      return ctx.reply({ text: `⚠️ The request list changed or its preview expired. ${jids.length} request(s) are now pending; review this list and run the command with *confirm* again.` });
+    }
+    await ctx.natsu.groupRequestParticipantsUpdate(ctx.jid, previous.jids, action);
+    REQUEST_PREVIEWS.delete(key);
+    await ctx.reply({ text: `✅ ${previous.jids.length} request(s) ${action === "approve" ? "approved" : "rejected"}.` });
   } catch (e) {
-    await ctx.reply({ text: `❌ approveall : ${e.message}` });
+    await ctx.reply({ text: `❌ ${action}all: ${e.message}` });
   }
-}, "OWNER", "Approve all group requests");
+}
 
-reg("rejectall", async (ctx) => {
-  if (!ctx.isGroup) return ctx.reply({ text: "❌ Group only." });
-  if (!ctx.isOwner) return ctx.reply({ text: "❌ Owner only." });
-  try {
-    const requests = await ctx.natsu.groupRequestParticipantsList(ctx.jid);
-    if (!requests?.length) return ctx.reply({ text: "✅ No requests." });
-    const jids = requests.map((r) => r.jid);
-    await ctx.natsu.groupRequestParticipantsUpdate(ctx.jid, jids, "reject");
-    await ctx.reply({ text: `🚫 ${jids.length} request(s) rejected.` });
-  } catch (e) { await ctx.reply({ text: `❌ ${e.message}` }); }
-}, "OWNER", "Reject all requests");
+// ════════════════════════════════════════════════════════════════
+// 👥 GROUP — review all pending join requests
+// ════════════════════════════════════════════════════════════════
+reg(["approveall", "approuveall"], (ctx) => handleAllJoinRequests(ctx, "approve"), "GROUP", "Approve all pending join requests");
+reg("rejectall", (ctx) => handleAllJoinRequests(ctx, "reject"), "GROUP", "Reject all pending join requests");
 
 // ════════════════════════════════════════════════════════════════
 // 🥱 ADVER / FUN — APIs simples

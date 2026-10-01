@@ -11,18 +11,113 @@
 
 const axios = require("axios");
 const crypto = require("crypto");
+const { spawn, spawnSync } = require("child_process");
 const config = require("./config");
 const main = require("./commands");
 
 const REGISTRY = main.REGISTRY;
 const CATEGORIES = main.CATEGORIES;
 const ax = axios.create({ timeout: 60000 });
+const DEMOTE_PREVIEWS = new Map();
 
 function reg(names, handler, category = "MISC", desc = "") {
   for (const n of [].concat(names)) {
     REGISTRY[n] = { handler, category, desc, name: n };
     (CATEGORIES[category] = CATEGORIES[category] || []).push(n);
   }
+}
+
+let ffmpegAvailable;
+function hasFfmpeg() {
+  if (ffmpegAvailable !== undefined) return ffmpegAvailable;
+  try {
+    ffmpegAvailable = spawnSync("ffmpeg", ["-version"], { stdio: "ignore", timeout: 2000 }).status === 0;
+  } catch { ffmpegAvailable = false; }
+  return ffmpegAvailable;
+}
+
+function quotedWAMessage(ctx) {
+  const info = ctx.m.message?.extendedTextMessage?.contextInfo;
+  if (!info?.quotedMessage) return null;
+  const botId = (ctx.natsu.user?.id || "").split(":")[0].toLowerCase();
+  const quotedSender = (info.participant || "").split(":")[0].toLowerCase();
+  return {
+    key: {
+      remoteJid: info.remoteJid || ctx.jid,
+      id: info.stanzaId,
+      fromMe: Boolean(botId && quotedSender && botId === quotedSender),
+      ...(info.participant ? { participant: info.participant } : {}),
+    },
+    message: info.quotedMessage,
+  };
+}
+
+function unwrapQuotedContent(message) {
+  let content = message;
+  let viewOnce = false;
+  for (let depth = 0; depth < 8 && content; depth += 1) {
+    const wrapperKey = [
+      "ephemeralMessage",
+      "viewOnceMessage",
+      "viewOnceMessageV2",
+      "viewOnceMessageV2Extension",
+      "documentWithCaptionMessage",
+    ].find((key) => content[key]?.message);
+    if (!wrapperKey) break;
+    if (wrapperKey.startsWith("viewOnce")) viewOnce = true;
+    content = content[wrapperKey].message;
+  }
+  for (const key of ["imageMessage", "videoMessage", "audioMessage", "documentMessage"]) {
+    if (content?.[key]?.viewOnce === true) viewOnce = true;
+  }
+  return { content, viewOnce };
+}
+
+async function downloadQuotedMedia(ctx, quoted) {
+  const { downloadMediaMessage } = require("@whiskeysockets/baileys");
+  return downloadMediaMessage(quoted, "buffer", {}, {
+    logger: ctx.natsu.logger,
+    reuploadRequest: (message) => ctx.natsu.updateMediaMessage(message),
+  });
+}
+
+function convertToMp3(input) {
+  return new Promise((resolve, reject) => {
+    const ffmpeg = spawn("ffmpeg", [
+      "-hide_banner", "-loglevel", "error", "-i", "pipe:0",
+      "-vn", "-c:a", "libmp3lame", "-b:a", "128k", "-f", "mp3", "pipe:1",
+    ], { stdio: ["pipe", "pipe", "pipe"] });
+    const chunks = [];
+    let outputBytes = 0;
+    let stderr = "";
+    let settled = false;
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+    ffmpeg.stdout.on("data", (chunk) => {
+      outputBytes += chunk.length;
+      if (outputBytes > 24 * 1024 * 1024) {
+        ffmpeg.kill("SIGKILL");
+        return fail(new Error("Converted audio exceeds the 24 MB limit."));
+      }
+      chunks.push(chunk);
+    });
+    ffmpeg.stderr.on("data", (chunk) => { stderr = (stderr + chunk.toString()).slice(-2000); });
+    ffmpeg.on("error", fail);
+    ffmpeg.on("close", (code) => {
+      if (settled) return;
+      if (code === 0 && outputBytes) {
+        settled = true;
+        resolve(Buffer.concat(chunks));
+      } else {
+        fail(new Error(stderr.trim() || `ffmpeg exited with code ${code}.`));
+      }
+    });
+    ffmpeg.stdin.on("error", () => {});
+    ffmpeg.stdin.end(input);
+  });
 }
 
 async function sendImg(ctx, url, caption = "") {
@@ -181,6 +276,52 @@ async function groupAction(ctx, action) {
 reg(["kick","k"], (ctx) => groupAction(ctx, "remove"), "GROUP", "Kick user");
 reg(["promote","p"], (ctx) => groupAction(ctx, "promote"), "GROUP", "Promote");
 reg(["demote","d"], (ctx) => groupAction(ctx, "demote"), "GROUP", "Demote");
+reg("demoteall", async (ctx) => {
+  if (!requireGroupAdmin(ctx)) return;
+  if (!ctx.isBotAdmin) return ctx.reply({ text: "❌ Make the bot a group admin first." });
+  try {
+    const meta = await ctx.natsu.groupMetadata(ctx.jid);
+    const sender = (ctx.m.key?.participant || ctx.jid).split(":")[0].toLowerCase();
+    const bot = (ctx.natsu.user?.id || "").split(":")[0].toLowerCase();
+    const targets = meta.participants.filter((participant) => {
+      if (participant.admin !== "admin") return false;
+      const id = (participant.id || "").split(":")[0].toLowerCase();
+      return id && id !== sender && id !== bot;
+    });
+    if (!targets.length) return ctx.reply({ text: "✅ There are no other admins to demote." });
+    const requester = ctx.m.key?.participant || ctx.m.key?.remoteJid || ctx.jid;
+    const previewKey = `${ctx.jid}:${requester}`;
+    const targetIds = targets.map((participant) => participant.id).filter(Boolean);
+    const previous = DEMOTE_PREVIEWS.get(previewKey);
+    const sameTargets = previous && previous.expiresAt > Date.now() &&
+      previous.ids.slice().sort().join("|") === targetIds.slice().sort().join("|");
+    if ((ctx.text || "").trim().toLowerCase() !== "confirm") {
+      DEMOTE_PREVIEWS.set(previewKey, { ids: targetIds, expiresAt: Date.now() + 120000 });
+      return ctx.reply({
+        text: `⚠️ ${targetIds.length} other admin(s) will lose admin rights. The group owner, you, and the bot will be skipped. This preview expires in 2 minutes.\nRun *${config.PREFIX}demoteall confirm* to continue.`,
+      });
+    }
+    if (!sameTargets) {
+      DEMOTE_PREVIEWS.set(previewKey, { ids: targetIds, expiresAt: Date.now() + 120000 });
+      return ctx.reply({ text: `⚠️ The admin list changed or its preview expired. ${targetIds.length} other admin(s) are now eligible; review this preview and run *${config.PREFIX}demoteall confirm* again.` });
+    }
+    let demoted = 0;
+    let failed = 0;
+    for (const id of previous.ids) {
+      try {
+        const result = await ctx.natsu.groupParticipantsUpdate(ctx.jid, [id], "demote");
+        const status = Array.isArray(result) ? result[0]?.status : result?.status;
+        if (status && Number(status) !== 200) failed += 1;
+        else demoted += 1;
+      } catch { failed += 1; }
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    DEMOTE_PREVIEWS.delete(previewKey);
+    await ctx.reply({ text: `✅ Demoted ${demoted} admin(s).${failed ? ` ⚠️ ${failed} failed.` : ""}` });
+  } catch (e) {
+    await ctx.reply({ text: `❌ demoteall: ${e.message}` });
+  }
+}, "GROUP", "Demote all other admins");
 reg(["add","invite"], (ctx) => {
   if (!requireGroupAdmin(ctx)) return;
   const num = (ctx.text || "").replace(/\D/g, "");
@@ -246,11 +387,11 @@ reg(["listadmins","tagadmin","admins"], async (ctx) => {
   });
 }, "GROUP", "List admins");
 
-reg(["listonline","online"], async (ctx) => {
+reg(["members","membercount","listonline","online"], async (ctx) => {
   if (!ctx.isGroup) return ctx.reply({ text: "❌ Group only." });
   const meta = await ctx.natsu.groupMetadata(ctx.jid);
-  await ctx.reply({ text: `👥 ${meta.participants.length} members in the group.` });
-}, "GROUP", "Members count");
+  await ctx.reply({ text: `👥 ${meta.participants.length} group members. WhatsApp does not provide a reliable full online-member list here.` });
+}, "GROUP", "Group member count");
 
 reg(["closetime"], async (ctx) => {
   if (!requireGroupAdmin(ctx)) return;
@@ -515,15 +656,108 @@ reg(["countdown"], (ctx) => {
 // 🎮 PLAYER — mini-jeux
 // ════════════════════════════════════════════════════════════════
 reg(["rps"], (ctx) => {
-  const ch = ["pierre","feuille","ciseaux"], b = ch[Math.floor(Math.random()*3)];
-  ctx.reply({ text: `✊✋✌️ Le bot a choisi : *${b}*` });
+  const choices = { rock: "rock", pierre: "rock", paper: "paper", feuille: "paper", scissors: "scissors", ciseaux: "scissors" };
+  const player = choices[(ctx.text || "").trim().toLowerCase()];
+  if (!player) return ctx.reply({ text: `✊✋✌️ Choose *rock*, *paper*, or *scissors*.\nExample: ${config.PREFIX}rps rock` });
+  const bot = ["rock", "paper", "scissors"][Math.floor(Math.random() * 3)];
+  const result = player === bot ? "It's a tie!" :
+    ((player === "rock" && bot === "scissors") || (player === "paper" && bot === "rock") || (player === "scissors" && bot === "paper") ? "You win!" : "I win!");
+  ctx.reply({ text: `✊✋✌️ You: *${player}* · Bot: *${bot}*\n${result}` });
 }, "PLAYER", "Pierre feuille ciseaux");
+const GUESS_GAMES = new Map();
+const HANGMAN_GAMES = new Map();
+const TTT_GAMES = new Map();
+function gameKey(ctx) {
+  const sender = ctx.m.key?.participant || ctx.m.key?.remoteJid || ctx.jid;
+  return `${ctx.jid}:${sender}`;
+}
 reg(["guess"], (ctx) => {
-  const n = 1 + Math.floor(Math.random()*100);
-  ctx.reply({ text: `🔢 Guess a number between 1 and 100! (Answer: ${n})` });
-}, "PLAYER", "Guess");
-reg(["hangman"], (ctx) => ctx.reply({ text: "🪢 Hangman — coming soon 💕" }), "PLAYER", "Hangman");
-reg(["tictactoe","ttt"], (ctx) => ctx.reply({ text: "❌⭕ Tic Tac Toe — coming soon 💕" }), "PLAYER", "TicTacToe");
+  const key = gameKey(ctx);
+  let game = GUESS_GAMES.get(key);
+  if (!game || /^(start|new)$/i.test((ctx.text || "").trim())) {
+    game = { number: 1 + Math.floor(Math.random() * 100), attempts: 0 };
+    GUESS_GAMES.set(key, game);
+    return ctx.reply({ text: `🔢 I'm thinking of a number from 1 to 100. Send *${config.PREFIX}guess <number>* to play.` });
+  }
+  const guess = Number((ctx.text || "").trim());
+  if (!Number.isInteger(guess) || guess < 1 || guess > 100) {
+    return ctx.reply({ text: `❌ Guess a whole number from 1 to 100, or send *${config.PREFIX}guess new* to restart.` });
+  }
+  game.attempts += 1;
+  if (guess === game.number) {
+    GUESS_GAMES.delete(key);
+    return ctx.reply({ text: `🎉 Correct! It was *${guess}*. Attempts: ${game.attempts}.` });
+  }
+  ctx.reply({ text: `${guess < game.number ? "⬆️ Higher" : "⬇️ Lower"} — ${game.attempts} attempt(s).` });
+}, "PLAYER", "Guess the number");
+
+reg(["hangman"], (ctx) => {
+  const key = gameKey(ctx);
+  let game = HANGMAN_GAMES.get(key);
+  const input = (ctx.text || "").trim().toLowerCase();
+  if (!game || input === "start" || input === "new") {
+    const words = ["baileys", "whatsapp", "dentsu", "bot", "telegram", "natsutech"];
+    game = { word: words[Math.floor(Math.random() * words.length)], guessed: new Set(), wrong: 0 };
+    HANGMAN_GAMES.set(key, game);
+  } else {
+    if (!/^[a-z]$/.test(input)) return ctx.reply({ text: `🪢 Send one letter with *${config.PREFIX}hangman <letter>* (or *new* to restart).` });
+    if (game.guessed.has(input)) return ctx.reply({ text: "You already tried that letter." });
+    game.guessed.add(input);
+    if (!game.word.includes(input)) game.wrong += 1;
+  }
+  const shown = [...game.word].map((letter) => game.guessed.has(letter) ? letter : "_").join(" ");
+  const won = [...game.word].every((letter) => game.guessed.has(letter));
+  const lost = game.wrong >= 6;
+  if (won || lost) HANGMAN_GAMES.delete(key);
+  ctx.reply({
+    text: `🪢 *Hangman*  ·  ${game.wrong}/6 misses\n\n${lost ? `💔 The word was *${game.word}*.` : `${shown}${won ? "\n\n🎉 You got it!" : ""}`}\n\n${won || lost ? `Start again with *${config.PREFIX}hangman*.` : `Tried: ${[...game.guessed].join(", ") || "—"}\nGuess with *${config.PREFIX}hangman <letter>*.`}`,
+  });
+}, "PLAYER", "Hangman");
+
+function tttWinner(board) {
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for (const [a,b,c] of lines) if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+  return board.every(Boolean) ? "draw" : null;
+}
+function tttBoard(board) {
+  return `${board.slice(0,3).map((v,i)=>v||String(i+1)).join(" │ ")}\n───┼───┼───\n${board.slice(3,6).map((v,i)=>v||String(i+4)).join(" │ ")}\n───┼───┼───\n${board.slice(6,9).map((v,i)=>v||String(i+7)).join(" │ ")}`;
+}
+reg(["tictactoe","ttt"], (ctx) => {
+  const key = gameKey(ctx);
+  let game = TTT_GAMES.get(key);
+  const input = (ctx.text || "").trim().toLowerCase();
+  if (!game || input === "start" || input === "new") {
+    game = { board: Array(9).fill("") };
+    TTT_GAMES.set(key, game);
+    return ctx.reply({ text: `❌⭕ *Tic-tac-toe* — You are X; I am O.\n\n${tttBoard(game.board)}\n\nChoose a square with *${config.PREFIX}ttt 1-9*.` });
+  }
+  const position = Number(input) - 1;
+  if (!Number.isInteger(position) || position < 0 || position > 8) {
+    return ctx.reply({ text: `Choose an empty square from 1 to 9 with *${config.PREFIX}ttt <number>*.` });
+  }
+  if (game.board[position]) return ctx.reply({ text: "That square is already occupied." });
+  game.board[position] = "X";
+  let result = tttWinner(game.board);
+  if (!result) {
+    const open = game.board.map((value,index)=>value ? -1 : index).filter((index)=>index >= 0);
+    const winningMove = (mark) => open.find((index) => {
+      game.board[index] = mark;
+      const wins = tttWinner(game.board) === mark;
+      game.board[index] = "";
+      return wins;
+    });
+    let botMove = winningMove("O");
+    if (botMove === undefined) botMove = winningMove("X");
+    if (botMove === undefined) botMove = open.includes(4) ? 4 : open.find((i)=>[0,2,6,8].includes(i));
+    if (botMove === undefined) botMove = open[0];
+    game.board[botMove] = "O";
+    result = tttWinner(game.board);
+  }
+  if (result) TTT_GAMES.delete(key);
+  ctx.reply({
+    text: `❌⭕ *Tic-tac-toe*\n\n${tttBoard(game.board)}\n\n${result === "X" ? "🎉 You win!" : result === "O" ? "🤖 I win!" : result === "draw" ? "🤝 Draw!" : `Your turn: *${config.PREFIX}ttt <1-9>*.`}${result ? `\nStart again with *${config.PREFIX}ttt*.` : ""}`,
+  });
+}, "PLAYER", "Tic-tac-toe");
 reg(["slot","slots"], (ctx) => {
   const e = ["🍒","🍋","🍇","🍉","⭐","💎","7️⃣"];
   const r = [0,0,0].map(()=>e[Math.floor(Math.random()*e.length)]);
@@ -655,26 +889,72 @@ reg(["wallpaper","wp"], async (ctx) => {
   await sendImg(ctx, `https://image.pollinations.ai/prompt/${encodeURIComponent(ctx.text+" 4k wallpaper")}?nologo=true`, `🖼 ${ctx.text}`);
 }, "DOWNLOAD", "Wallpaper");
 
-reg(["vv","viewonce"], (ctx) => ctx.reply({ text: "👁 Reply to a *view once* message with .vv (server-side extraction unavailable for now 💕)" }), "DOWNLOAD", "View once");
-reg("vv2", (ctx) => ctx.reply({ text: "👁 same as .vv — private sending coming soon 💕" }), "DOWNLOAD", "View once v2");
-reg(["toimg","stickertoimage"], async (ctx) => {
-  const q = ctx.m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-  if (!q?.stickerMessage) return ctx.reply({ text: "❌ Reply to a sticker with .toimg" });
+reg(["vv","viewonce"], async (ctx) => {
+  const quoted = quotedWAMessage(ctx);
+  if (!quoted) return ctx.reply({ text: `❌ Reply to a regular photo or video with *${config.PREFIX}vv*.` });
+  const { content, viewOnce } = unwrapQuotedContent(quoted.message);
+  if (viewOnce) {
+    return ctx.reply({ text: "🔒 This message is marked as view once. I won't bypass that privacy setting—please ask the sender to share it as a regular photo or video." });
+  }
+  const type = content?.imageMessage ? "image" : content?.videoMessage ? "video" : null;
+  if (!type) return ctx.reply({ text: `❌ ${config.PREFIX}vv supports regular quoted photos and videos only.` });
   try {
-    const { downloadMediaMessage } = require("@whiskeysockets/baileys");
-    const buf = await downloadMediaMessage({ message: q }, "buffer", {});
+    const buffer = await downloadQuotedMedia(ctx, quoted);
+    await ctx.natsu.sendMessage(ctx.jid, {
+      [type]: buffer,
+      caption: "📎 Copy of the quoted media",
+      contextInfo: config.contextInfo,
+    }, { quoted: ctx.m });
+  } catch (e) {
+    await ctx.reply({ text: `❌ vv: ${e.message}` });
+  }
+}, "DOWNLOAD", "Copy a regular quoted photo/video");
+
+reg(["toimg","stickertoimage"], async (ctx) => {
+  const quoted = quotedWAMessage(ctx);
+  if (!quoted) return ctx.reply({ text: "❌ Reply to a sticker with .toimg" });
+  const { content, viewOnce } = unwrapQuotedContent(quoted.message);
+  if (viewOnce) return ctx.reply({ text: "🔒 I won't bypass view-once media. Ask the sender to resend it as a regular file." });
+  if (!content?.stickerMessage) return ctx.reply({ text: "❌ Reply to a sticker with .toimg" });
+  try {
+    const buf = await downloadQuotedMedia(ctx, quoted);
     // Send the webp buffer as image (WA renders webp as image)
     await ctx.natsu.sendMessage(ctx.jid, { image: buf, caption: "🖼 Sticker → Image 💕" }, { quoted: ctx.m });
   } catch (e) { await ctx.reply({ text: `❌ toimg: ${e.message}` }); }
 }, "DOWNLOAD", "Sticker → image");
-reg("tomp3", (ctx) => ctx.reply({ text: "🎵 Reply to a video with .tomp3 (coming soon 💕)" }), "DOWNLOAD", "Video → mp3");
+reg("tomp3", async (ctx) => {
+  const quoted = quotedWAMessage(ctx);
+  if (!quoted) return ctx.reply({ text: `❌ Reply to an audio or video with *${config.PREFIX}tomp3*.` });
+  const { content, viewOnce } = unwrapQuotedContent(quoted.message);
+  if (viewOnce) return ctx.reply({ text: "🔒 I won't bypass view-once media. Ask the sender to resend it as a regular file." });
+  if (!content?.videoMessage && !content?.audioMessage) {
+    return ctx.reply({ text: `❌ ${config.PREFIX}tomp3 supports quoted audio or video.` });
+  }
+  if (!hasFfmpeg()) return ctx.reply({ text: "❌ Audio conversion is unavailable on this host because ffmpeg is not installed." });
+  try {
+    const input = await downloadQuotedMedia(ctx, quoted);
+    if (!Buffer.isBuffer(input) || !input.length) throw new Error("The quoted media could not be downloaded.");
+    if (input.length > 64 * 1024 * 1024) throw new Error("The source media exceeds the 64 MB limit.");
+    const audio = await convertToMp3(input);
+    await ctx.natsu.sendMessage(ctx.jid, {
+      audio,
+      mimetype: "audio/mpeg",
+      fileName: "audio.mp3",
+      contextInfo: config.contextInfo,
+    }, { quoted: ctx.m });
+  } catch (e) {
+    await ctx.reply({ text: `❌ tomp3: ${e.message}` });
+  }
+}, "DOWNLOAD", "Convert quoted audio/video to MP3");
 reg("tomp4", (ctx) => ctx.reply({ text: "🎬 Reply to an audio/gif with .tomp4 (coming soon 💕)" }), "DOWNLOAD", "GIF → mp4");
 reg(["tourl","url"], async (ctx) => {
-  const q = ctx.m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-  if (!q?.imageMessage) return ctx.reply({ text: "❌ Reply to an image with .tourl" });
+  const quoted = quotedWAMessage(ctx);
+  if (!quoted) return ctx.reply({ text: "❌ Reply to an image with .tourl" });
+  const { content, viewOnce } = unwrapQuotedContent(quoted.message);
+  if (viewOnce) return ctx.reply({ text: "🔒 I won't bypass view-once media. Ask the sender to resend it as a regular image." });
+  if (!content?.imageMessage) return ctx.reply({ text: "❌ Reply to an image with .tourl" });
   try {
-    const { downloadMediaMessage } = require("@whiskeysockets/baileys");
-    const buf = await downloadMediaMessage({ message: q }, "buffer", {});
+    const buf = await downloadQuotedMedia(ctx, quoted);
     const FormData = require("form-data");
     const fd = new FormData(); fd.append("fileToUpload", buf, "img.jpg"); fd.append("reqtype","fileupload");
     const { data } = await ax.post("https://catbox.moe/user/api.php", fd, { headers: fd.getHeaders() });

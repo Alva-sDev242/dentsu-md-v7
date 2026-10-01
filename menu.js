@@ -9,10 +9,11 @@
 */
 
 const config = require("./config");
+const { spawnSync } = require("child_process");
 
 const SMALL_CAPS = { a: "ᴀ", b: "ʙ", c: "ᴄ", d: "ᴅ", e: "ᴇ", f: "ꜰ", g: "ɢ", h: "ʜ", i: "ɪ", j: "ᴊ", k: "ᴋ", l: "ʟ", m: "ᴍ", n: "ɴ", o: "ᴏ", p: "ᴘ", q: "ǫ", r: "ʀ", s: "ꜱ", t: "ᴛ", u: "ᴜ", v: "ᴠ", w: "ᴡ", x: "x", y: "ʏ", z: "ᴢ" };
 function smallCaps(value) { return String(value ?? "").replace(/[A-Za-z]/g, (letter) => SMALL_CAPS[letter.toLowerCase()] || letter); }
-const CURATED_COMMANDS = new Set(["menu","help","ping","alive","runtime","uptime","infobot","owner","pair","setpp","ban","unban","block","unblock","self","public","approveall","rejectall","play","song","tiktok","fb","ytmp4","ytmp3","apk","instagram","gitclone","mediafire","spotify","movie","yts","ytsearch","shorturl","qrcode","say","bible","tourl","vv","toimg","tomp3","sticker","s","getpp","hidetag","tagall","tagadmin","getalladmins","groupinfo","promote","demote","kick","mute","unmute","open","close","join","left","add","creategroup","resetlink","grouplink","listadmins","listonline","antilink","welcome","hijack","tag","glitchtext","writetext","advancedglow","typographytext","pixelglitch","neonglitch","flagtext","flag3dtext","logomaker","cartoonstyle","watercolortext","blackpinklogo","gradienttext","gfx","gfx2","gfx3","ai","gpt","bot","ask","natsu","rps","guess","coin","dice","hangman","tictactoe","joke","truth","dare","advice","funfact","dog","cat","meme","trivia","weather","translate","lyrics","genpass","calculate","wiki","dictionary","time","recipe","book","remind","myip","iplookup","currency","sciencefact","mathfact"]);
+const CURATED_COMMANDS = new Set(["menu","help","ping","alive","runtime","uptime","infobot","owner","pair","setpp","ban","unban","block","unblock","self","public","approveall","approuveall","rejectall","play","song","tiktok","fb","ytmp4","ytmp3","apk","instagram","gitclone","mediafire","spotify","movie","yts","ytsearch","shorturl","qrcode","say","bible","tourl","vv","toimg","tomp3","sticker","s","getpp","hidetag","tagall","tagadmin","getalladmins","groupinfo","promote","demote","demoteall","kick","mute","unmute","open","close","join","left","add","creategroup","resetlink","grouplink","listadmins","members","antilink","welcome","tag","glitchtext","writetext","advancedglow","typographytext","pixelglitch","neonglitch","flagtext","flag3dtext","logomaker","cartoonstyle","watercolortext","blackpinklogo","gradienttext","gfx","gfx2","gfx3","ai","gpt","bot","ask","natsu","rps","guess","coin","dice","hangman","tictactoe","joke","truth","dare","advice","funfact","dog","cat","meme","trivia","weather","translate","lyrics","genpass","calculate","wiki","dictionary","time","recipe","book","remind","myip","iplookup","currency","sciencefact","mathfact"]);
 
 
 function uptime(sec) {
@@ -27,7 +28,7 @@ function uptime(sec) {
 const SECTIONS = [
   { icon: "👑", name: "OWNER", items: [
     "setpp","owner","ban","unban","block","unblock","alive","pair",
-    "ping","speed","runtime","self","public","approveall","rejectall",
+    "ping","speed","runtime","self","public",
   ]},
   { icon: "📥", name: "DOWNLOAD", items: [
     "play","play2","song","vv","vv2","tiktok","tt","toimg","ytsearch","yts",
@@ -38,8 +39,8 @@ const SECTIONS = [
   { icon: "👥", name: "GROUP", items: [
     "hidetag","htag","tagall","demote","promote","mute","unmute","open","close",
     "join","kick","left","add","creategroup","resetlink","pair","tag",
-    "listadmins","listonline","closetime","opentime","antilink","grouplink",
-    "kickadmins","kickall","welcome","hijack",
+    "listadmins","members","closetime","opentime","antilink","grouplink",
+    "kickadmins","kickall","welcome","approveall","approuveall","rejectall","demoteall",
   ]},
   { icon: "🖼️", name: "EPHOTO", items: [
     "glitchtext","writetext","advancedglow","typographytext","pixelglitch",
@@ -101,10 +102,9 @@ const TG_SECTIONS = [
 
 ];
 
-// ── Fusionne SECTIONS statiques + REGISTRY dynamique ───────────
-// Toutes les commandes du REGISTRY (commands.js + commands_extra.js)
-// sont ajoutées automatiquement dans la bonne catégorie pour que
-// le menu WhatsApp liste les 400+ commandes sans rien oublier.
+// ── Fusionne les commandes autorisées et réellement disponibles ─
+// Seules les commandes enregistrées et capables de fonctionner dans
+// l'environnement courant sont affichées.
 const CATEGORY_TO_SECTION = {
   OWNER: "OWNER", DOWNLOAD: "DOWNLOAD", GROUP: "GROUP",
   EPHOTO: "EPHOTO", STICKER: "STICKER", LOGO: "LOGO",
@@ -118,7 +118,17 @@ function mergedSections() {
   try { CATS = require("./commands").CATEGORIES || {}; REG = require("./commands").REGISTRY || {}; } catch {}
   try { require("./commands_extra"); CATS = require("./commands").CATEGORIES || CATS; REG = require("./commands").REGISTRY || REG; } catch {}
   const BUILTIN = new Set(["menu","help","list","ping","alive","runtime","uptime","infobot","owner","weather","translate","lyrics"]);
-  const REAL = (name) => BUILTIN.has(name) || !!REG[name];
+  const ffmpegReady = () => {
+    try { return spawnSync("ffmpeg", ["-version"], { stdio: "ignore", timeout: 2000 }).status === 0; }
+    catch { return false; }
+  };
+  const REAL = (name) => {
+    if (!BUILTIN.has(name) && !REG[name]) return false;
+    if (name === "movie" && !config.OMDB_API_KEY) return false;
+    if (/^gfx(?:[2-9]|1[0-2])?$/.test(name) && !config.NEXORACLE_API_KEY) return false;
+    if (name === "tomp3" && !ffmpegReady()) return false;
+    return true;
+  };
   const out = SECTIONS.map((section) => ({ ...section, items: section.items.filter((command) => CURATED_COMMANDS.has(command) && REAL(command)) }));
   for (const [category, commands] of Object.entries(CATS)) {
     const sectionName = CATEGORY_TO_SECTION[category] || category;
