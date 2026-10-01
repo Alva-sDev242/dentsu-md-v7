@@ -843,7 +843,6 @@ reg(["wallpaper","wp"], async (ctx) => {
 }, "DOWNLOAD", "Wallpaper");
 
 reg(["vv","viewonce"], async (ctx) => {
-reg(["vv","viewonce"], async (ctx) => {
   const quoted = quotedWAMessage(ctx);
   if (!quoted) return ctx.reply({ text: `❌ Réponds à une photo, vidéo ou audio avec *${config.PREFIX}vv*.` });
   const { content } = unwrapQuotedContent(quoted.message);
