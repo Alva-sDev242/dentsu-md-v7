@@ -459,7 +459,7 @@ reg("bible", async (ctx) => {
 
 // Media utilities that need quoted-message context are registered in commands_extra.js.
 
-async function handleAllJoinRequests(ctx, action) {
+async function handleAllJoinRequests(ctx, action, commandName) {
   if (!ctx.isGroup) return ctx.reply({ text: "❌ Group only." });
   if (!ctx.isAdmin && !ctx.isOwner) return ctx.reply({ text: "❌ Group admins only." });
   if (!ctx.isBotAdmin) return ctx.reply({ text: "❌ Make the bot a group admin first." });
@@ -476,7 +476,7 @@ async function handleAllJoinRequests(ctx, action) {
     if ((ctx.text || "").trim().toLowerCase() !== "confirm") {
       REQUEST_PREVIEWS.set(key, { jids, expiresAt: Date.now() + 120000 });
       return ctx.reply({
-        text: `⚠️ ${jids.length} pending request(s) will be ${action === "approve" ? "approved" : "rejected"}. This preview expires in 2 minutes.\nRun *${config.PREFIX}${action === "approve" ? "approveall" : "rejectall"} confirm* to continue.`,
+        text: `⚠️ ${jids.length} pending request(s) will be ${action === "approve" ? "approved" : "rejected"}. This preview expires in 2 minutes.\nRun *${config.PREFIX}${commandName} confirm* to continue.`,
       });
     }
     if (!sameQueue) {
@@ -494,8 +494,10 @@ async function handleAllJoinRequests(ctx, action) {
 // ════════════════════════════════════════════════════════════════
 // 👥 GROUP — review all pending join requests
 // ════════════════════════════════════════════════════════════════
-reg(["approveall", "approuveall"], (ctx) => handleAllJoinRequests(ctx, "approve"), "GROUP", "Approve all pending join requests");
-reg("rejectall", (ctx) => handleAllJoinRequests(ctx, "reject"), "GROUP", "Reject all pending join requests");
+reg("approveall", (ctx) => handleAllJoinRequests(ctx, "approve", "approveall"), "GROUP", "Approve all pending join requests");
+reg("approuveall", (ctx) => handleAllJoinRequests(ctx, "approve", "approuveall"), "GROUP", "Approve all pending join requests");
+reg("rejectall", (ctx) => handleAllJoinRequests(ctx, "reject", "rejectall"), "GROUP", "Reject all pending join requests");
+reg("rejecteall", (ctx) => handleAllJoinRequests(ctx, "reject", "rejecteall"), "GROUP", "Reject all pending join requests");
 
 // ════════════════════════════════════════════════════════════════
 // 🥱 ADVER / FUN — APIs simples
