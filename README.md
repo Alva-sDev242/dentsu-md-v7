@@ -48,6 +48,18 @@ Starter plan for continuous operation. If the service was created manually,
 confirm its plan and Auto-Deploy setting in the Render Dashboard; syncing
 `render.yaml` only updates a Blueprint-managed service.
 
+## 🌐 Deploy the pairing frontend on Netlify
+
+The static French pairing page is in `web/`. Connect this repository to Netlify
+and deploy from the repository root; `netlify.toml` sets `web` as the publish
+directory and requires no build step. The Netlify rewrites proxy `/api/*`,
+`/health`, and `/assets/*` to the Railway backend, so the browser uses the
+Netlify origin and the backend does not need a permissive CORS policy.
+
+The rewrite target is
+`https://dentsu-mini-bot-production.up.railway.app`. If the Railway service
+URL changes, update the target in `netlify.toml`.
+
 ## 🚂 Deploy on Railway
 
 Connect this GitHub repository to Railway and deploy the `main` branch.
