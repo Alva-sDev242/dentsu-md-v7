@@ -29,19 +29,39 @@ Then on Telegram → `/start` → `/pair <your number>`.
 
 ## 🚀 Deploy on Render
 
-This bot uses `@whiskeysockets/baileys` 7.0.0-rc14 and runs as a
-**Background Worker**, not as a web service. The included
-`render.yaml` creates the worker and mounts persistent storage for the
-WhatsApp sessions in `auth_info/`.
+This bot runs as a **web service** because it serves the pairing page and the
+`/health` endpoint. The included `render.yaml` selects Render's Starter plan,
+keeps WhatsApp credentials on a persistent disk, and deploys each commit pushed
+to the linked branch.
 
 Required Render environment variables:
 
 - `TELEGRAM_BOT_TOKEN` — token from BotFather.
 - `NEXORACLE_API_KEY` — optional, used by the `gfx` logo commands.
+- `OMDB_API_KEY` — optional, used by movie commands.
 
 The persistent disk is important: without it, a Render restart removes the
-WhatsApp pairing sessions and the accounts must be paired again. The disk plan
-may incur a Render charge.
+WhatsApp pairing sessions and the accounts must be paired again. Render's free
+web services sleep after 15 minutes without inbound traffic; the WhatsApp
+connection alone does not keep the web service awake. Keep this service on the
+Starter plan for continuous operation. If the service was created manually,
+confirm its plan and Auto-Deploy setting in the Render Dashboard; syncing
+`render.yaml` only updates a Blueprint-managed service.
+
+## 🚂 Deploy on Railway
+
+Connect this GitHub repository to Railway and deploy the `main` branch.
+`railway.json` configures the Node build, start command, `/health` check, and
+automatic restarts. Set these variables in the Railway service:
+
+- `TELEGRAM_BOT_TOKEN` — required for Telegram pairing.
+- `NEXORACLE_API_KEY` — optional, used by the `gfx` logo commands.
+- `OMDB_API_KEY` — optional, used by movie commands.
+
+Create a Railway Volume and mount it at `/app/auth_info` so WhatsApp sessions
+survive redeploys. Volumes are attached in Railway's service settings, not in
+`railway.json`. Enable automatic deployments from `main` in the service's
+deployment settings.
 
 ## 📜 License
 

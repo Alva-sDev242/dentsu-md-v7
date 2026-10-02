@@ -5,6 +5,7 @@ services:
     plan: starter
     buildCommand: npm ci
     startCommand: npm start
+    autoDeployTrigger: commit
     healthCheckPath: /health
     disk:
       name: whatsapp-auth
