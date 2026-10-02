@@ -48,17 +48,16 @@ Starter plan for continuous operation. If the service was created manually,
 confirm its plan and Auto-Deploy setting in the Render Dashboard; syncing
 `render.yaml` only updates a Blueprint-managed service.
 
-## 🌐 Deploy the pairing frontend on Netlify
+## 🌐 Deploy the pairing frontend on Vercel
 
-The static French pairing page is in `web/`. Connect this repository to Netlify
-and deploy from the repository root; `netlify.toml` sets `web` as the publish
-directory and requires no build step. The Netlify rewrites proxy `/api/*`,
-`/health`, and `/assets/*` to the Railway backend, so the browser uses the
-Netlify origin and the backend does not need a permissive CORS policy.
+The French pairing page is a static site in `web/`. Import this repository into
+Vercel and set **Root Directory** to `web` (Framework Preset: **Other**; no build
+command is needed). `web/vercel.json` proxies `/api/*`, `/health`, and
+`/assets/*` to the Railway backend, so browser requests stay on the Vercel
+origin and do not require a permissive CORS policy on the backend.
 
-The rewrite target is
-`https://dentsu-mini-bot-production.up.railway.app`. If the Railway service
-URL changes, update the target in `netlify.toml`.
+If the Railway service URL changes, update the rewrite destinations in
+`web/vercel.json`.
 
 ## 🚂 Deploy on Railway
 
