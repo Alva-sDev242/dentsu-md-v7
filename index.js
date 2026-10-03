@@ -31,7 +31,8 @@ if (fs.existsSync(authRoot)) {
     const creds = path.join(authRoot, sub, "creds.json");
     if (fs.existsSync(creds)) {
       console.log("🔁 Resuming WhatsApp session:", sub);
-      require("./lib/whatsapp").startWhatsApp({ authSubdir: sub, phoneNumber: sub });
+      const isWebQrSession = /^webqr_[a-f0-9]{48}$/.test(sub);
+      require("./lib/whatsapp").startWhatsApp({ authSubdir: sub, phoneNumber: isWebQrSession || sub === "default" ? undefined : sub });
     }
   }
 }

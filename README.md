@@ -11,7 +11,7 @@ A feminine, fast WhatsApp bot with 400+ commands, paired and managed from Telegr
 
 ## ✨ Features
 
-- 🔗 Pair WhatsApp accounts via Telegram `/pair`
+- 🔗 Pair WhatsApp accounts via Telegram `/pair` or the bilingual website (pairing code / QR)
 - 💬 400+ WhatsApp commands (download, AI, group, sticker, fun, +18, tools)
 - 👮 Anti-link (`delete` / `kick` modes), anti-spam, welcome, goodbye
 - 💕 Built-in love-words commands (FR + EN) — she's a bébé bot 🥹
@@ -50,11 +50,12 @@ confirm its plan and Auto-Deploy setting in the Render Dashboard; syncing
 
 ## 🚂 Deploy on Railway
 
-Connect this GitHub repository to Railway and deploy the `main` branch.
+Connect this GitHub repository to Railway and deploy the `agent-dentsu-mini-render-railway` branch for the bilingual pairing website. The `main` branch remains unchanged.
 `railway.json` configures the Node build, start command, `/health` check, and
 automatic restarts. Set these variables in the Railway service:
 
 - `TELEGRAM_BOT_TOKEN` — required for Telegram pairing.
+- The website supports both the WhatsApp pairing code and QR flows. The QR renderer is self-hosted; QR tokens are not sent to a third-party QR service.
 - `NEXORACLE_API_KEY` — optional, used by the `gfx` logo commands.
 - `OMDB_API_KEY` — optional, used by movie commands.
 
