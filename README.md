@@ -61,8 +61,8 @@ automatic restarts. Set these variables in the Railway service:
 
 Create a Railway Volume and mount it at `/app/auth_info` so WhatsApp sessions
 survive redeploys. Volumes are attached in Railway's service settings, not in
-`railway.json`. Enable automatic deployments from `main` in the service's
-deployment settings.
+`railway.json`. Enable automatic deployments from `agent-dentsu-mini-render-railway` in the
+service's deployment settings for the bilingual pairing website.
 
 ## 📜 License
 
